@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">RealLoad</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="latitude">위도</string>
+    <string name="longitude">경도</string>
+    <string name="radio_yesterday">어제</string>
+    <string name="radio_today">오늘</string>
+    <string name="radio_week">최근 1주</string>
+    <string name="radio_custom">기간 지정</string>
+    <string name="dialog_create_place_title">새 장소 만들기</string>
+    <string name="dialog_create_place_content">해당 위치를 내 장소로 등록하시겠습니까?</string>
+    <string name="submit">확인</string>
+    <string name="cancel">취소</string>
+    <string name="modify">수정</string>
+    <string name="toast_place_not_inputted_text">장소가 입력되지 않았습니다.</string>
+    <string name="toast_place_saved">장소가 저장되었습니다.</string>
+    <string name="message_permission_listener">위치 정보를 저장하기 위한 권한을 허용해주세요.\n [설정]-[권한]에서 권한을 추가할 수 있습니다.</string>
+    <string name="toast_permission_granted">애플리케이션을 사용하기 위한 권한이 허용되어 있습니다.</string>
+    <string name="toast_permission_denied">애플리케이션을 사용하기 위한 권한을 허용해주세요.</string>
+    <string name="default_notification_channel_id">my_noti_channel</string>
+    <string name="push_noti_title_message">푸시 알림 수신</string>
+    <string name="push_noti_description_message">지정한 장소로 진입 또는 이탈 시 푸시알림을 수신합니다.</string>
+    <string name="stay_condition_title_message">머문 시간 조건 변경</string>
+    <string name="stay_condition_description_message">장소를 등록하기 위해 머문 시간에 대한 조건을 변경합니다.</string>
+    <string name="distance_condition_title_message">장소 반경 설정</string>
+    <string name="distance_condition_description_message">장소에 진입하기, 이탈하기 이벤트를 수신하기 위한 반경 조건을 변경합니다.\n 반경이 너무 작으면 진입, 이탈 이벤트가 빈번히 발생할 수 있고, 반경이 너무 크면 다른 장소를 같은 장소로 인식할 수 있습니다.</string>
+    <string name="dialog_stay_time_title">등록 시간 조건 변경</string>
+    <string name="dialog_distance_title">장소 반경 조건 변경</string>
+    <string name="noti_enter_place_description">장소에 진입하였습니다.</string>
+    <string name="noti_exit_place_description">장소에서 벗어났습니다.</string>
+    <string name="toast_not_enough_required_api_datepicker">API버전이 낮습니다. 추후에 이용 가능합니다.</string>
+    <string name="dialog_datepicker_from">시작 날짜</string>
+    <string name="dialog_datepicker_to">종료 날짜</string>
+    <string name="guide_text_map">지도를 통해 현재 위치를 확인하고 오늘 또는 특정 날짜에 머문 장소를 확인할 수 있습니다.</string>
+    <string name="guide_text_visited">이동한 장소에 따라 머문 시간과 함께 장소를 등록했다면 등록정보가, 등록하지 않은 장소라면 위도,경도 정보를 확인할 수 있습니다. </string>
+    <string name="guide_text_place">특정 위치에 대한 정보를 수정할 수 있습니다.\n 북마크 추가 시 장소 진입, 이탈 이벤트를 감지하고 푸시알림을 수신할 수 있으며, 특정 장소에 대한 이미지를 저장하고, 지도 화면에서 확인할 수 있습니다.</string>
+    <string name="guide_text_setting">푸시 알림 수신, 머문시간, 장소 반경에 대한 설정을 변경할 수 있습니다.</string>
+    <string name="checkbox_detail_log">이동 경로 보기</string>
+    <array name="array_stay_time">
+        <item>"10분"</item>
+        <item>"20분"</item>
+        <item>"30분"</item>
+        <item>"1시간"</item>
+        <item>"2시간"</item>
+    </array>
+    <array name="array_distance">
+        <item>"10m"</item>
+        <item>"20m"</item>
+        <item>"30m"</item>
+        <item>"40m"</item>
+        <item>"50m"</item>
+    </array>
+</resources>

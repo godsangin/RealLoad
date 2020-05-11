@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <import type="com.myhome.realload.model.NamedPlace"/>
+        <variable
+            name="model"
+            type="com.myhome.realload.viewmodel.adapterviewmodel.VisitedItemViewModel" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:padding="4dp">
+        <TextView
+            android:id="@+id/index_tv"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_margin="4dp"
+            android:background="@drawable/circler_view"
+            android:text="@{model.index}"
+            android:textColor="@color/colorWhite"
+            android:gravity="center"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/corner_textlines"
+            android:layout_margin="4dp"
+            android:padding="4dp"
+            app:layout_constraintTop_toBottomOf="@id/index_tv">
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:padding="4dp"
+                bind_text="@{((NamedPlace) model.place).name}"
+                android:textSize="16sp"/>
+            <TextView
+                android:id="@+id/starttime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/name"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:padding="4dp"
+                bind_text="@{((NamedPlace) model.place).startDate}"/>
+            <TextView
+                android:id="@+id/endtime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/starttime"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:padding="4dp"
+                bind_text="@{((NamedPlace) model.place).endDate}"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

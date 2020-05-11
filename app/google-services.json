@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "275254513735",
+    "firebase_url": "https://realload.firebaseio.com",
+    "project_id": "realload",
+    "storage_bucket": "realload.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:275254513735:android:daec2cf645e50c825ae162",
+        "android_client_info": {
+          "package_name": "com.myhome.realload"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "275254513735-mk4u43nfu3dfeioh68gnegqka57q9u1e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxUjMMr9cs71VRveeH4Ih3-ep0qbSz-ig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "275254513735-mk4u43nfu3dfeioh68gnegqka57q9u1e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

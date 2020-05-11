@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/map"
+            android:title="지도"
+            android:icon="@drawable/ic_map_gray_24dp"
+            />
+        <item
+            android:id="@+id/visited"
+            android:title="방문장소"
+            android:icon="@drawable/ic_directions_walk_gray_24dp"
+            />
+        <item
+            android:id="@+id/place"
+            android:title="내장소"
+            android:icon="@drawable/ic_place_gray_24dp"
+            />
+        <item
+            android:id="@+id/setting"
+            android:title="설정"
+            android:icon="@drawable/ic_settings_gray_24dp"
+            />
+    </group>
+</menu>
