@@ -43,8 +43,8 @@ class PlaceViewModel(database: AppDatabase?, listener: PlaceViewModelListener) {
             listener.goToAlbum(place)
         }
 
-        override fun updateImages(images: ArrayList<Image>) {
-            listener.updateImages(images)
+        override fun updateImages(pid:Long, images: ArrayList<Image>) {
+            listener.updateImages(pid, images)
         }
 
         override fun removeItem(place: NamedPlace?, position: Int) {

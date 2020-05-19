@@ -30,7 +30,6 @@ class CustomGeofenceBroadcastReceiver :BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
 
-        Log.d("log==", "excuted")
         if(geofencingEvent.hasError()){
             val errorMessage = GeofenceStatusCodes.getStatusCodeString(geofencingEvent.errorCode)
             return
@@ -45,10 +44,8 @@ class CustomGeofenceBroadcastReceiver :BroadcastReceiver() {
             place.latitude = location.latitude
             place.longitude = location.longitude
             val customPlaces = AppDatabase.getInstance(context!!)?.CustomPlaceDao()?.selectFavoritePlace()
-//            saveTxt(context, "log== "+ location.latitude.toString() + "\n" + location.longitude)
             val locationCirculator = LocationCirculator()
             val geofencePlace = locationCirculator.findClosestPlace(place, customPlaces)
-//            saveTxt(context, geofencePlace?.name ?:"null")
             if(geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL||
                 geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT){
                 when(geofenceTransition){

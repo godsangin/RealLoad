@@ -11,7 +11,6 @@ import com.google.android.gms.location.*
 import com.myhome.realload.db.AppDatabase
 import com.myhome.realload.model.Place
 import com.myhome.realload.model.PlaceLog
-import com.myhome.realload.utils.GeofencePendingIntent
 import com.myhome.realload.utils.LogSemaphore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +47,7 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
                 }
                 Geofence.GEOFENCE_TRANSITION_EXIT -> {
                     LocationServices.getGeofencingClient(context!!)?.removeGeofences(geofencePendingIntent)
-                    val format = SimpleDateFormat("YYYY-MM-dd HH:mm:ss")
+                    val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                     saveTxt(context, format.format(Date()))//test
                     updatePlace(context)
                     addPlace(context, geofencingEvent.triggeringLocation.latitude, geofencingEvent.triggeringLocation.longitude)
@@ -71,7 +70,7 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
         val settingSharedPreferences = context.getSharedPreferences("setting", Context.MODE_PRIVATE)
         val stayCondition = settingSharedPreferences.getLong("stayCondition", 600000)
         var startTime = sharedPreferences.getString("startTime", "")
-        val format = SimpleDateFormat("YYYY-MM-dd HH:mm:ss")
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         if(startTime.equals("")){
             saveTxt(context, "start time null")
             startTime = format.format(Date())
@@ -90,7 +89,7 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
                 val timeString = format.format(Date())
                 val parseTime = format.parse(timeString)
                 if((parseTime.time - start.time) < stayCondition && parseTime.time > start.time){
-                    saveTxt(context, "removed" + (parseTime.time - start.time).toString())
+//                    saveTxt(context, "removed" + (parseTime.time - start.time).toString())
                     database.PlaceDao().delete(place)//test
                 }else{
                     place.readOnly = true
@@ -108,10 +107,12 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
 
     fun addPlace(context:Context, latitude:Double, longitude:Double){
         val database = AppDatabase.getInstance(context)
-        val format = SimpleDateFormat("YYYY-MM-dd HH:mm:ss")
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         val startTime = format.format(Date())
         val sharedPreferences = context.getSharedPreferences("location", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
+        val logTime = sharedPreferences.getString("logTime", "")
+
         editor.putString("startTime", startTime)
         editor.commit()
         CoroutineScope(Dispatchers.IO).launch{
@@ -128,17 +129,30 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
             }
             else{
             }
-            val log = PlaceLog()
-            log.latitude = latitude
-            log.longitude = longitude
-            log.date = startTime
-            database!!.LogDao().insert(log)
+//            if((!logTime.equals("")) && format.parse(logTime).time - Date().time < 10000){
+//                //장소에서 벗어났는데 시간이 너무 짧을경우(연속으로 너무많이 등록됨)
+//                //빠르게 이동하는 경우
+//            }
+//            else{
+                editor.putString("logTime", startTime)
+                editor.commit()
+                //origin code
+                val log = PlaceLog()
+                log.latitude = latitude
+                log.longitude = longitude
+                log.date = startTime
+                database!!.LogDao().insert(log)
+//            }
         }
     }
 
 
     private fun addGeofences(context:Context, geofenceList:MutableList<Geofence>) {
-        geofencingClient.addGeofences(getGeofencingRequest(geofenceList), GeofencePendingIntent.getInstance(context).geofencePendingIntent).run {
+        val geofencePendingIntent: PendingIntent by lazy {
+            val intent = Intent(context, GeofenceBroadcastReceiver::class.java)
+            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+        geofencingClient.addGeofences(getGeofencingRequest(geofenceList), geofencePendingIntent).run {
             addOnSuccessListener {
 
             }

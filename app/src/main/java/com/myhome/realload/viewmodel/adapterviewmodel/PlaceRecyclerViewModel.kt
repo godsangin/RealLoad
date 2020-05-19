@@ -1,5 +1,6 @@
 package com.myhome.realload.viewmodel.adapterviewmodel
 
+import android.util.Log
 import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableField
 import com.myhome.realload.PlaceListener
@@ -52,6 +53,7 @@ class PlaceRecyclerViewModel(place:NamedPlace, placeListener: PlaceListener?) {
         place.itemViewType = 2
         isModifying.set(false)
         //pid + places 저장하기
-        placeListener?.updateImages(myImages)
+        myImages.removeAt(myImages.size-1)
+        placeListener?.updateImages(place.id, myImages)
     }
 }

@@ -19,6 +19,9 @@
     <string name="message_permission_listener">위치 정보를 저장하기 위한 권한을 허용해주세요.\n [설정]-[권한]에서 권한을 추가할 수 있습니다.</string>
     <string name="toast_permission_granted">애플리케이션을 사용하기 위한 권한이 허용되어 있습니다.</string>
     <string name="toast_permission_denied">애플리케이션을 사용하기 위한 권한을 허용해주세요.</string>
+    <string name="toast_permisssion_background_denied">애플리케이션 사용을 위해 백그라운드 환경에서 위치 정보를 수신할 수 있는 권한이 필요합니다.</string>
+    <string name="toast_finish_app">\'뒤로\' 버튼을 한번 더 누르면 종료됩니다.</string>
+    <string name="permission_background_guide">앱의 동작을 위해 위치 정보를 항상 수신할 수 있어야 합니다.\n아래 권한 설정에서 백그라운드 위치 수신을 항상 허용으로 설정해주세요. </string>
     <string name="default_notification_channel_id">my_noti_channel</string>
     <string name="push_noti_title_message">푸시 알림 수신</string>
     <string name="push_noti_description_message">지정한 장소로 진입 또는 이탈 시 푸시알림을 수신합니다.</string>
@@ -38,6 +41,16 @@
     <string name="guide_text_place">특정 위치에 대한 정보를 수정할 수 있습니다.\n 북마크 추가 시 장소 진입, 이탈 이벤트를 감지하고 푸시알림을 수신할 수 있으며, 특정 장소에 대한 이미지를 저장하고, 지도 화면에서 확인할 수 있습니다.</string>
     <string name="guide_text_setting">푸시 알림 수신, 머문시간, 장소 반경에 대한 설정을 변경할 수 있습니다.</string>
     <string name="checkbox_detail_log">이동 경로 보기</string>
+    <string name="toast_gps_not_online">GPS가 활성화 상태일 경우에만 서비스를 이용할 수 있습니다.\n 위치 기능을 활성화해주세요.</string>
+    <string-array name="splash_strings">
+        <item>애플리케이션을 사용하기 위해서는 위치서비스를 백그라운드 환경에서도 접근할 수 있는 권한이 필요합니다.</item>
+        <item>이동경로 보기 기능을 사용해보세요. 오늘 움직인 이동경로를 확인할 수 있습니다.</item>
+        <item>같은 번호를 가진 이동 경로가 있나요? 100번 이상의 이동경로는 앞의 두자리까지만 표시됩니다.</item>
+        <item>내 장소에 이미지를 추가해보세요. 진입한 장소를 확인할 때 장소 이미지를 확인할 수 있습니다.</item>
+        <item>장소를 북마크에 추가하면 장소 진입, 이탈 시 알림 이벤트를 수신할 수 있습니다.</item>
+        <item>장소 등록이 원할하게 이루어지지 않나요? 나에게 맞는 머문시간, 장소반경을 설정해보세요.</item>
+        <item>기간을 지정해서 장소를 설정할 경우, 시작날짜와 종료날짜 순서대로 날짜를 지정할 수 있습니다.</item>
+    </string-array>
     <array name="array_stay_time">
         <item>"10분"</item>
         <item>"20분"</item>

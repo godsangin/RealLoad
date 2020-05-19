@@ -1,5 +1,6 @@
 package com.myhome.realload.viewmodel
 
+import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LifecycleOwner
 import com.myhome.realload.MapListener
@@ -23,7 +24,8 @@ class MapViewModel(listener:MapListener, database: AppDatabase?, lifecycleOwner:
     val customDateTo = ObservableField<String>()
     val logChecked = ObservableField(false)
     init {
-        period.set(0)
+        period.set(-2)
+//        refreshData()
     }
 
     fun onClickYesterday(){
@@ -50,7 +52,7 @@ class MapViewModel(listener:MapListener, database: AppDatabase?, lifecycleOwner:
     }
 
     fun getData(start:Date, end:Date){
-        val format = SimpleDateFormat("YYYY-MM-dd")
+        val format = SimpleDateFormat("yyyy-MM-dd")
 
         getData(format.format(start), format.format(end))
     }
@@ -158,7 +160,7 @@ class MapViewModel(listener:MapListener, database: AppDatabase?, lifecycleOwner:
     }
 
     fun getLog(start:Date, end:Date){
-        val format = SimpleDateFormat("YYYY-MM-dd")
+        val format = SimpleDateFormat("yyyy-MM-dd")
 
         getLog(format.format(start), format.format(end))
     }
@@ -171,6 +173,9 @@ class MapViewModel(listener:MapListener, database: AppDatabase?, lifecycleOwner:
     }
 
     fun placeLog(){
+        if(period.get() ?: -2 == -2){
+            period.set(0)
+        }
         if(!(logChecked.get() ?: false)){
             logChecked.set(true)
             val case = period.get()

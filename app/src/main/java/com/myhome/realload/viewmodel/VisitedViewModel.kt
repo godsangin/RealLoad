@@ -22,7 +22,7 @@ class VisitedViewModel(fragmentListener: FragmentListener?, visitedViewModelList
     val owner = owner
     val database = database
     val dateText = ObservableField<String>()
-    val format = SimpleDateFormat("YYYY-MM-dd")
+    val format = SimpleDateFormat("yyyy-MM-dd")
     var date:Date
     val dataLoadEnd = ObservableField(false)
     val datePickerListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->

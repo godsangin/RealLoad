@@ -300,7 +300,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
     }
 
     override fun onInfoWindowClick(marker: Marker?) {
-        if(marker?.snippet.equals("추가")){
+        if(marker?.title.equals("정의되지 않은 장소입니다.")){
             showCreateCustomPlaceDialog(marker?.position)
         }
     }
@@ -311,8 +311,15 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         moveMapByUser = false
         val locationManager = context?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        var DEFAULT_LOCATION:LatLng? = null
+        if(location == null){
+            DEFAULT_LOCATION = LatLng(37.566011, 126.977413)
+            Toast.makeText(context, getString(R.string.toast_gps_not_online), Toast.LENGTH_SHORT).show()
+        }
+        else{
+            DEFAULT_LOCATION = LatLng(location.latitude, location.longitude)
+        }
 
-        var DEFAULT_LOCATION = LatLng(location.latitude, location.longitude)
         if(defaultPlace == null){
             val markerTitle = "위치정보 가져올 수 없음"
             val markerSnippet = "위치 퍼미션과 GPS 활성 여부 확인하세요"

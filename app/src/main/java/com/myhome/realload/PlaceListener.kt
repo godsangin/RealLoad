@@ -11,6 +11,6 @@ interface PlaceListener{
     fun goToAlbum(place: NamedPlace?)
     fun getDatabase():AppDatabase?
     fun getOwner():LifecycleOwner
-    fun updateImages(images:ArrayList<Image>)
+    fun updateImages(pid:Long, images:ArrayList<Image>)
     fun removeItem(place:NamedPlace?, position:Int)
 }

@@ -58,12 +58,11 @@ class CustomGeofenceService :JobService(){
     private fun addGeofence(places:List<CustomPlace>){
 
         val sharedPreference = applicationContext?.getSharedPreferences("setting", Context.MODE_PRIVATE)
-        var radius = sharedPreference?.getFloat("distanceCondition", 10F)
+        var radius = sharedPreference?.getFloat("distanceCondition", 20F)
         val geofenceList = mutableListOf<Geofence>()
         for(place in places){
             geofenceList.add(getGeofence(place.id.toString(), Pair(place.latitude, place.longitude), radius!!))
         }
-
         geofencingClient.addGeofences(getGeofencingRequest(geofenceList), geofencePendingIntent).run {
             addOnSuccessListener {
             }

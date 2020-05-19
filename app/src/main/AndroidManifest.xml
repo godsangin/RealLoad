@@ -16,29 +16,28 @@
         android:roundIcon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".view.GuideActivity"></activity>
-
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCxUjMMr9cs71VRveeH4Ih3-ep0qbSz-ig" />
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3136625326865731~5939244001"/>
-        <activity
-            android:name=".view.MainActivity"
-            android:configChanges="orientation|screenSize">
+        <activity android:name=".view.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".view.GuideActivity" />
 
-        <service
-            android:name=".LocationUpdatesService"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCxUjMMr9cs71VRveeH4Ih3-ep0qbSz-ig" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3136625326865731~5939244001" />
+
+        <activity
+            android:name=".view.MainActivity"
+            android:configChanges="orientation|screenSize">
+
+        </activity>
+
         <service
             android:name=".GeofenceService"
             android:enabled="true"

@@ -71,8 +71,9 @@ class PlaceFragment : Fragment() {
             return viewLifecycleOwner
         }
 
-        override fun updateImages(images: ArrayList<Image>) {
+        override fun updateImages(pid:Long, images: ArrayList<Image>) {
             CoroutineScope(Dispatchers.IO).launch {
+                getDatabase()?.ImageDao()?.deleteImagesByPid(pid)
                 for(image in images){
                     if(image.imageRes.equals("")){
                         continue
