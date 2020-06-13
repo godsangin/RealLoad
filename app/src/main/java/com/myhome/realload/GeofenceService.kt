@@ -9,6 +9,14 @@ import android.location.Location
 import android.os.Looper
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import com.myhome.realload.db.AppDatabase
+import com.myhome.realload.model.Place
+import com.myhome.realload.model.PlaceLog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class GeofenceService:JobService() {
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
@@ -34,6 +42,11 @@ class GeofenceService:JobService() {
                 val radius = sharedPreference.getFloat("distanceCondition", 10F)
                 val geofenceList = mutableListOf<Geofence>(
                     getGeofence("realtimeLocation", Pair(position.latitude, position.longitude), radius))
+                val sharedPreferences = getSharedPreferences("location", Context.MODE_PRIVATE)
+                var startTime = sharedPreferences.getString("startTime", "") ?: ""
+                if(startTime.equals("")){
+                    addPlace(applicationContext, position.latitude, position.longitude)
+                }
                 addGeofences(geofenceList)
                 mFusedLocationClient.removeLocationUpdates(this)
             }
@@ -109,5 +122,39 @@ class GeofenceService:JobService() {
                         or Geofence.GEOFENCE_TRANSITION_EXIT    // 이탈 감지시
                         or Geofence.GEOFENCE_TRANSITION_DWELL)    // 머물기 감지시
             .build()
+    }
+
+    fun addPlace(context:Context, latitude:Double, longitude:Double){
+        val database = AppDatabase.getInstance(context)
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val startTime = format.format(Date())
+        val sharedPreferences = context.getSharedPreferences("location", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+        editor.putString("startTime", startTime)
+        editor.commit()
+        CoroutineScope(Dispatchers.IO).launch{
+            //            val place = database!!.PlaceDao().selectByLocation(mCurrentLocation!!.latitude, mCurrentLocation!!.longitude)
+            val place = database!!.PlaceDao().selectByStartDate(startTime)
+            if(place == null || place.readOnly){//기존에 장소가 없거나 장소에서 떠난적이 있을경우(떠나면 readOnly=true로바뀜)
+                val newPlace = Place()
+                newPlace.latitude = latitude
+                newPlace.longitude = longitude
+                newPlace.startDate = startTime
+                newPlace.endDate = "..."
+                newPlace.readOnly = false
+                database.PlaceDao().insert(newPlace)
+            }
+            else{
+            }
+            editor.putString("logTime", startTime)
+            editor.commit()
+            //origin code
+            val log = PlaceLog()
+            log.latitude = latitude
+            log.longitude = longitude
+            log.date = startTime
+            database!!.LogDao().insert(log)
+        }
     }
 }

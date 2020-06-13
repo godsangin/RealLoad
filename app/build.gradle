@@ -12,8 +12,8 @@ android {
         applicationId "com.myhome.realload"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 5
-        versionName "1.0.4"
+        versionCode 10
+        versionName "1.0.9"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -84,4 +84,9 @@ dependencies {
     implementation 'com.google.android.libraries.places:places:2.2.0'
     implementation 'com.myhome.siviewpager:siviewpager:1.0.5'
     implementation 'com.google.android.gms:play-services-ads:19.1.0'
+    //retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    //kakao auth
+    implementation group: project.KAKAO_SDK_GROUP, name: 'usermgmt', version: project.KAKAO_SDK_VERSION
 }

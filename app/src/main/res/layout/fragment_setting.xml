@@ -113,10 +113,35 @@
                     android:onClick="@{() -> model.onClickDistanceCondition()}"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-<!--            <TextView-->
-<!--                android:id="@+id/log"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"/>-->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/textlines"
+                android:layout_margin="12dp">
+                <CheckBox
+                    android:id="@+id/collect_location_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:text="@string/collect_location_title_message"
+                    android:padding="4dp"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/underline"
+                    android:button="@null"
+                    android:drawableRight="?android:attr/listChoiceIndicatorMultiple"/>
+                <!--                    android:checked="@{model.pushObservableField}"-->
+                <!--                    android:onClick="@{() -> model.onClickPush()}"-->
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/collect_location_title"
+                    android:text="@string/collect_location_description_message"
+                    android:padding="4dp"
+                    android:layout_margin="4dp"
+                    android:onClick="@{() -> model.onClickDistanceCondition()}"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </ScrollView>
 </layout>

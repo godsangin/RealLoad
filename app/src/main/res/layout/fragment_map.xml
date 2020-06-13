@@ -32,6 +32,7 @@
             android:layout_height="wrap_content"
             android:text="@string/radio_today"
             android:padding="4dp"
+            android:checked="@{model.period == 0 ? true:false}"
             android:onClick="@{() -> model.onClickToday()}"/>
         <RadioButton
             android:id="@+id/week_bt"

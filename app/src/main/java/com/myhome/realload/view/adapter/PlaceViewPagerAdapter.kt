@@ -31,7 +31,6 @@ class PlaceViewPagerAdapter(context:Context, listener:PlaceListener?, place:Name
         if(position == items?.size!! - 1 && modifying == true){
             addView.setOnClickListener {
                 if(listener == null){
-                    Log.d("log==","listener null")
                 }
                 assert(listener != null)
                 listener?.goToAlbum(place)

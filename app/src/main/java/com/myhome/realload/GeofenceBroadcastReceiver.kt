@@ -7,21 +7,33 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Environment
+import android.util.Log
 import com.google.android.gms.location.*
 import com.myhome.realload.db.AppDatabase
+import com.myhome.realload.model.ApiResponse
 import com.myhome.realload.model.Place
 import com.myhome.realload.model.PlaceLog
-import com.myhome.realload.utils.GeofencePendingIntent
 import com.myhome.realload.utils.LogSemaphore
+import com.myhome.realload.utils.RetrofitAPI
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class GeofenceBroadcastReceiver :BroadcastReceiver(){
     lateinit var geofencingClient: GeofencingClient
+
+    private lateinit var retrofit: Retrofit
+    private lateinit var retrofitAPI: RetrofitAPI
 
     @SuppressLint("MissingPermission")
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -48,8 +60,9 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
                 }
                 Geofence.GEOFENCE_TRANSITION_EXIT -> {
                     LocationServices.getGeofencingClient(context!!)?.removeGeofences(geofencePendingIntent)
-                    val format = SimpleDateFormat("YYYY-MM-dd HH:mm:ss")
-                    saveTxt(context, format.format(Date()))//test
+                    val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+//                    saveTxt(context, format.format(Date()))//test
+                    setRetrofiInit(context)
                     updatePlace(context)
                     addPlace(context, geofencingEvent.triggeringLocation.latitude, geofencingEvent.triggeringLocation.longitude)
                     val sharedPreferences = context.getSharedPreferences("setting", Context.MODE_PRIVATE)
@@ -71,9 +84,10 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
         val settingSharedPreferences = context.getSharedPreferences("setting", Context.MODE_PRIVATE)
         val stayCondition = settingSharedPreferences.getLong("stayCondition", 600000)
         var startTime = sharedPreferences.getString("startTime", "")
-        val format = SimpleDateFormat("YYYY-MM-dd HH:mm:ss")
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val userInfoSpf = context.getSharedPreferences("userInfo", Context.MODE_PRIVATE)
         if(startTime.equals("")){
-            saveTxt(context, "start time null")
+//            saveTxt(context, "start time null")
             startTime = format.format(Date())
             return
         }
@@ -89,14 +103,26 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
             try{
                 val timeString = format.format(Date())
                 val parseTime = format.parse(timeString)
+                val uid = userInfoSpf.getLong("uid", -1)
                 if((parseTime.time - start.time) < stayCondition && parseTime.time > start.time){
-                    saveTxt(context, "removed" + (parseTime.time - start.time).toString())
-                    database.PlaceDao().delete(place)//test
+//                    saveTxt(context, "removed" + (parseTime.time - start.time).toString())
+                    database.PlaceDao().delete(place)
+                    if(uid != -1.toLong()){
+                        val placeLog = PlaceLog()
+                        placeLog.latitude = place.latitude
+                        placeLog.longitude = place.longitude
+                        placeLog.date = place.startDate
+                        doPlaceLogInsert(uid, placeLog)
+                    }
+
                 }else{
                     place.readOnly = true
                     place.endDate = format.format(Date())
-                    saveTxt(context, "updated")
                     database.PlaceDao().update(place)
+                    //send place update to server
+                    if(uid != -1.toLong()) {
+                        doPlaceInsert(uid, place)
+                    }
                 }
             }catch(e:Exception){
                 place.readOnly = true
@@ -108,10 +134,11 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
 
     fun addPlace(context:Context, latitude:Double, longitude:Double){
         val database = AppDatabase.getInstance(context)
-        val format = SimpleDateFormat("YYYY-MM-dd HH:mm:ss")
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         val startTime = format.format(Date())
         val sharedPreferences = context.getSharedPreferences("location", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
+
         editor.putString("startTime", startTime)
         editor.commit()
         CoroutineScope(Dispatchers.IO).launch{
@@ -128,17 +155,24 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
             }
             else{
             }
-            val log = PlaceLog()
-            log.latitude = latitude
-            log.longitude = longitude
-            log.date = startTime
-            database!!.LogDao().insert(log)
+                editor.putString("logTime", startTime)
+                editor.commit()
+                //origin code
+                val log = PlaceLog()
+                log.latitude = latitude
+                log.longitude = longitude
+                log.date = startTime
+                database!!.LogDao().insert(log)
         }
     }
 
 
     private fun addGeofences(context:Context, geofenceList:MutableList<Geofence>) {
-        geofencingClient.addGeofences(getGeofencingRequest(geofenceList), GeofencePendingIntent.getInstance(context).geofencePendingIntent).run {
+        val geofencePendingIntent: PendingIntent by lazy {
+            val intent = Intent(context, GeofenceBroadcastReceiver::class.java)
+            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+        geofencingClient.addGeofences(getGeofencingRequest(geofenceList), geofencePendingIntent).run {
             addOnSuccessListener {
 
             }
@@ -195,5 +229,44 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
         }catch (e:IOException){
             e.printStackTrace()
         }
+    }
+
+    fun setRetrofiInit(context:Context){
+        val client = OkHttpClient.Builder()
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS).build()
+        retrofit = Retrofit.Builder()
+            .baseUrl(context.getString(R.string.apiUrl))
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        retrofitAPI = retrofit.create(RetrofitAPI::class.java)
+    }
+
+    fun doPlaceInsert(uid:Long, place:Place){
+        val apiResult = retrofitAPI.insertPlace(uid, place)
+        val retrofitCallback = object : Callback<ApiResponse> {
+            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                t.printStackTrace()
+            }
+
+            override fun onResponse(
+                call: Call<ApiResponse>,
+                response: Response<ApiResponse>
+            ) {
+                val result = response.body()
+                if (result?.resultCode == 200) {
+                    Log.d("result==", result.toString())
+                    val response = ((result.body?.get("result")
+                        ?: "false") as String).toBoolean()
+                    Log.d("result==", response.toString())
+                }
+            }
+        }
+        apiResult.enqueue(retrofitCallback)
+    }
+
+    fun doPlaceLogInsert(uid:Long, placeLog:PlaceLog){
+
     }
 }
