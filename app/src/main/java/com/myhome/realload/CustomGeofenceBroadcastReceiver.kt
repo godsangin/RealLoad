@@ -46,10 +46,10 @@ class CustomGeofenceBroadcastReceiver :BroadcastReceiver() {
             val customPlaces = AppDatabase.getInstance(context!!)?.CustomPlaceDao()?.selectFavoritePlace()
             val locationCirculator = LocationCirculator()
             val geofencePlace = locationCirculator.findClosestPlace(place, customPlaces)
-            if(geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL||
+            if(geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER||
                 geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT){
                 when(geofenceTransition){
-                    Geofence.GEOFENCE_TRANSITION_DWELL -> {
+                    Geofence.GEOFENCE_TRANSITION_ENTER -> {
                         //Place에 있으면 Noti
                         sendNotification(context, context.getString(R.string.app_name), geofencePlace?.name + " " + context.getString(R.string.noti_enter_place_description))
                     }

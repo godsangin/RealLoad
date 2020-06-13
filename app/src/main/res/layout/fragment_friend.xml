@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="model"
+            type="com.myhome.realload.viewmodel.FriendViewModel" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp"
+        tools:context=".view.fragment.FriendFragment">
+
+        <ScrollView
+            android:id="@+id/recycler_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/friend_recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                bind_item="@{model.friends}"
+                />
+        </ScrollView>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/recycler_container"
+            app:layout_constraintBottom_toTopOf="@id/view_temp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_margin="12dp"
+            android:onClick="@{() -> model.findFriends()}"
+            android:text="친구찾기"/>
+
+        <TextView
+            android:id="@+id/view_temp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_margin="12dp"
+            android:gravity="center"
+            android:text="slot drawer layout\n 위로 스와이프하면 나오는뷰"
+            android:textColor="#000"
+            android:padding="8dp"
+            android:background="@drawable/corner_textlines"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -1,5 +1,6 @@
 package com.myhome.realload.utils
 
+import android.util.Log
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -10,15 +11,13 @@ import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableField
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.navigation.NavigationView
 import com.myhome.realload.FragmentListener
+import com.myhome.realload.GlideApp
 import com.myhome.realload.PlaceListener
 import com.myhome.realload.R
-import com.myhome.realload.model.Image
-import com.myhome.realload.model.NamedPlace
-import com.myhome.realload.model.Place
-import com.myhome.realload.view.adapter.PlaceRecyclerViewAdapter
-import com.myhome.realload.view.adapter.PlaceViewPagerAdapter
-import com.myhome.realload.view.adapter.VisitedRecyclerViewAdapter
+import com.myhome.realload.model.*
+import com.myhome.realload.view.adapter.*
 import com.myhome.siviewpager.SIViewPager
 
 object DataBindingUtils {
@@ -33,33 +32,12 @@ object DataBindingUtils {
         (recyclerView.adapter as PlaceRecyclerViewAdapter).listener = listener.get()
     }
 
-//    @BindingAdapter("bind_listener")
-//    @JvmStatic
-//    fun bindPlaceListener(view: SIViewPager, listener:ObservableField<PlaceListener>){
-//        if(view.pagerAdapter == null){
-//            view.build(PlaceViewPagerAdapter(view.context))
-//        }
-//        (view.pagerAdapter as PlaceViewPagerAdapter).listener = listener.get()
-//    }
+    @BindingAdapter("bind_navlistener")
+    @JvmStatic
+    fun setNavListener(view:NavigationView, listener:NavigationView.OnNavigationItemSelectedListener){
+        view.setNavigationItemSelectedListener(listener)
+    }
 
-//    @BindingAdapter("bind_modify")
-//    @JvmStatic
-//    fun bindModify(siViewPager: SIViewPager, modify:ObservableField<Boolean>){
-//        if(siViewPager.pagerAdapter == null){
-//            return
-//        }
-//        (siViewPager.pagerAdapter as PlaceViewPagerAdapter).modifing = modify.get()!!
-//        siViewPager.pagerAdapter?.notifyDataSetChanged()
-//    }
-
-//    @BindingAdapter("bind_place")
-//    @JvmStatic
-//    fun bindPlace(siViewPager: SIViewPager, place:ObservableField<NamedPlace>){
-//        if(siViewPager.pagerAdapter == null){
-//            siViewPager.build(PlaceViewPagerAdapter(siViewPager.context))
-//        }
-//        (siViewPager.pagerAdapter as PlaceViewPagerAdapter).place = place.get()
-//    }
     @BindingAdapter("bind_item")
     @JvmStatic
     fun bindItem(recyclerView:RecyclerView, items:ObservableArrayList<Place>){
@@ -86,6 +64,38 @@ object DataBindingUtils {
         (recyclerView.adapter as PlaceRecyclerViewAdapter).items = items
         recyclerView.adapter!!.notifyDataSetChanged()
     }
+
+    @BindingAdapter("bind_item")
+    @JvmStatic
+    fun bindFriendItem(recyclerView:RecyclerView, items:ObservableArrayList<Friend>){
+        val adapter = recyclerView.adapter
+        val lm = LinearLayoutManager(recyclerView.context)
+        if(adapter == null){
+            recyclerView.adapter = FriendRecyclerViewAdapter()
+            recyclerView.layoutManager = lm
+        }
+
+        (recyclerView.adapter as FriendRecyclerViewAdapter).items = items
+        recyclerView.adapter!!.notifyDataSetChanged()
+    }
+
+    @BindingAdapter("bind_item")
+    @JvmStatic
+    fun bindContactItem(recyclerView:RecyclerView, items:ObservableArrayList<Contact>){
+        val adapter = recyclerView.adapter
+        val lm = LinearLayoutManager(recyclerView.context)
+        if(adapter == null){
+            recyclerView.adapter = ContactRecyclerViewAdapter()
+            recyclerView.layoutManager = lm
+        }
+//        if(items.size % 10 != 0){
+//            return
+//        }
+        (recyclerView.adapter as ContactRecyclerViewAdapter).items = items
+        recyclerView.adapter!!.notifyDataSetChanged()
+    }
+
+
 
     @BindingAdapter(value = ["bind_images", "bind_listener", "bind_place", "bind_modifying"], requireAll = false)
     @JvmStatic
@@ -118,6 +128,12 @@ object DataBindingUtils {
         else{
             imageView.setImageResource(R.drawable.ic_star_gray_24dp)
         }
+    }
+
+    @BindingAdapter("bind_image")
+    @JvmStatic
+    fun bindImage(imageView:ImageView, imageUrl:String){
+        GlideApp.with(imageView.context).load(imageUrl).placeholder(R.drawable.ic_account_circle_gray_24dp).into(imageView)
     }
 
 

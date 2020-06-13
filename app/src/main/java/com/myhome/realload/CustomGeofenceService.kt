@@ -91,4 +91,5 @@ class CustomGeofenceService :JobService(){
                         or Geofence.GEOFENCE_TRANSITION_DWELL)    // 머물기 감지시
             .build()
     }
+
 }

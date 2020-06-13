@@ -29,6 +29,8 @@
     <string name="stay_condition_description_message">장소를 등록하기 위해 머문 시간에 대한 조건을 변경합니다.</string>
     <string name="distance_condition_title_message">장소 반경 설정</string>
     <string name="distance_condition_description_message">장소에 진입하기, 이탈하기 이벤트를 수신하기 위한 반경 조건을 변경합니다.\n 반경이 너무 작으면 진입, 이탈 이벤트가 빈번히 발생할 수 있고, 반경이 너무 크면 다른 장소를 같은 장소로 인식할 수 있습니다.</string>
+    <string name="collect_location_title_message">방문 정보 수집 동의</string>
+    <string name="collect_location_description_message">실시간 위치정보, 방문정보 이벤트를 수집하는데 동의합니다. 다른 사용자에게 위치 정보를 알리거나, ...</string>
     <string name="dialog_stay_time_title">등록 시간 조건 변경</string>
     <string name="dialog_distance_title">장소 반경 조건 변경</string>
     <string name="noti_enter_place_description">장소에 진입하였습니다.</string>
@@ -42,6 +44,12 @@
     <string name="guide_text_setting">푸시 알림 수신, 머문시간, 장소 반경에 대한 설정을 변경할 수 있습니다.</string>
     <string name="checkbox_detail_log">이동 경로 보기</string>
     <string name="toast_gps_not_online">GPS가 활성화 상태일 경우에만 서비스를 이용할 수 있습니다.\n 위치 기능을 활성화해주세요.</string>
+    <string name="nav_need_to_login">로그인해주세요.</string>
+    <string name="developer_email_address">leein3293@gmail.com</string>
+    <string name="realload_report">RealLoad 의견 </string>
+    <string name="kakao_app_key">b08101467419ec64891fdbb8ad76e489</string>
+    <string name="search_editor_hint">전화번호를 입력해주세요.</string>
+    <string name="apiUrl">http://175.114.99.171:8080</string>
     <string-array name="splash_strings">
         <item>애플리케이션을 사용하기 위해서는 위치서비스를 백그라운드 환경에서도 접근할 수 있는 권한이 필요합니다.</item>
         <item>이동경로 보기 기능을 사용해보세요. 오늘 움직인 이동경로를 확인할 수 있습니다.</item>
@@ -50,6 +58,7 @@
         <item>장소를 북마크에 추가하면 장소 진입, 이탈 시 알림 이벤트를 수신할 수 있습니다.</item>
         <item>장소 등록이 원할하게 이루어지지 않나요? 나에게 맞는 머문시간, 장소반경을 설정해보세요.</item>
         <item>기간을 지정해서 장소를 설정할 경우, 시작날짜와 종료날짜 순서대로 날짜를 지정할 수 있습니다.</item>
+        <item>내 장소로 지정하기 위해서는 먼저 해당 장소에 방문해야합니다.</item>
     </string-array>
     <array name="array_stay_time">
         <item>"10분"</item>

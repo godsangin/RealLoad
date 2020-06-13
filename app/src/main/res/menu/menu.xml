@@ -17,9 +17,9 @@
             android:icon="@drawable/ic_place_gray_24dp"
             />
         <item
-            android:id="@+id/setting"
-            android:title="설정"
-            android:icon="@drawable/ic_settings_gray_24dp"
+            android:id="@+id/friend"
+            android:title="친구"
+            android:icon="@drawable/ic_group_gray_24dp"
             />
     </group>
 </menu>
