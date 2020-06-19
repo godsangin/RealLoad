@@ -37,7 +37,8 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                bind_item="@{model.contacts}"
+                bind_item="@{model.friends}"
+                bind_listener="@{model.listener}"
                 />
         </ScrollView>
 

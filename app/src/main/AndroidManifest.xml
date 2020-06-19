@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -22,7 +22,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".view.FindFriendActivity"></activity>
+        <activity android:name=".view.FriendLocationActivity"></activity>
+        <activity android:name=".view.FindFriendActivity" />
         <activity android:name=".view.SettingActivity" />
 
         <meta-data
@@ -48,6 +49,9 @@
         <activity
             android:name=".view.MainActivity"
             android:configChanges="orientation|screenSize" />
+        <activity
+            android:name=".view.dialog.FriendInfoDialog"
+            android:theme="@android:style/Theme.DeviceDefault.Dialog" />
 
         <service
             android:name=".GeofenceService"

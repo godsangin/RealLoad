@@ -1,10 +1,11 @@
 package com.myhome.realload.model
 
+import org.json.JSONArray
 import org.json.JSONObject
 
-class ApiResponse: JSONObject() {
+class ApiArrayResponse:JSONObject() {
     var responseCode:Int? = 0
-    var body:Map<String, Any>? = null
+    var body:JSONArray? = null
     override fun toString(): String {
         return responseCode.toString() + body.toString()
     }

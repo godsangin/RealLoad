@@ -1,9 +1,5 @@
 package com.myhome.realload.utils
 
-import android.util.Log
-import android.view.View
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
@@ -18,6 +14,8 @@ import com.myhome.realload.PlaceListener
 import com.myhome.realload.R
 import com.myhome.realload.model.*
 import com.myhome.realload.view.adapter.*
+import com.myhome.realload.viewmodel.FindFriendListener
+import com.myhome.realload.viewmodel.fragment.FriendListener
 import com.myhome.siviewpager.SIViewPager
 
 object DataBindingUtils {
@@ -65,13 +63,13 @@ object DataBindingUtils {
         recyclerView.adapter!!.notifyDataSetChanged()
     }
 
-    @BindingAdapter("bind_item")
+    @BindingAdapter(value=["bind_friend_item", "bind_listener"], requireAll = false)
     @JvmStatic
-    fun bindFriendItem(recyclerView:RecyclerView, items:ObservableArrayList<Friend>){
+    fun bindFriendItem(recyclerView:RecyclerView, items:ObservableArrayList<Friend>, listener:ObservableField<FriendListener>){
         val adapter = recyclerView.adapter
         val lm = LinearLayoutManager(recyclerView.context)
         if(adapter == null){
-            recyclerView.adapter = FriendRecyclerViewAdapter()
+            recyclerView.adapter = FriendRecyclerViewAdapter(listener.get())
             recyclerView.layoutManager = lm
         }
 
@@ -79,13 +77,13 @@ object DataBindingUtils {
         recyclerView.adapter!!.notifyDataSetChanged()
     }
 
-    @BindingAdapter("bind_item")
+    @BindingAdapter(value = ["bind_item", "bind_listener"], requireAll = false)
     @JvmStatic
-    fun bindContactItem(recyclerView:RecyclerView, items:ObservableArrayList<Contact>){
+    fun bindContactItem(recyclerView:RecyclerView, items:ObservableArrayList<Friend>, listener:ObservableField<FindFriendListener>){
         val adapter = recyclerView.adapter
         val lm = LinearLayoutManager(recyclerView.context)
         if(adapter == null){
-            recyclerView.adapter = ContactRecyclerViewAdapter()
+            recyclerView.adapter = ContactRecyclerViewAdapter(listener.get())
             recyclerView.layoutManager = lm
         }
 //        if(items.size % 10 != 0){

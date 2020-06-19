@@ -18,15 +18,16 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class GeofenceService:JobService() {
+class GeofenceInitialJob(context:Context) {
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var location: Location
 
+    private val context = context
     private val UPDATE_INTERVAL_MS = 1000.toLong()
     private val FASTEST_UPDATE_INTERVAL_MS = 500.toLong()
     private val geofencingClient: GeofencingClient by lazy {
-        LocationServices.getGeofencingClient(this)
+        LocationServices.getGeofencingClient(context)
     }
 
     val locationCallback:LocationCallback = object : LocationCallback() {
@@ -38,14 +39,14 @@ class GeofenceService:JobService() {
                 location = locationList[locationList.size - 1]
                 //location = locationList.get(0);
                 val position = LatLng(location.getLatitude(), location.getLongitude())
-                val sharedPreference = getSharedPreferences("setting", Context.MODE_PRIVATE)
+                val sharedPreference = context.getSharedPreferences("setting", Context.MODE_PRIVATE)
                 val radius = sharedPreference.getFloat("distanceCondition", 10F)
                 val geofenceList = mutableListOf<Geofence>(
                     getGeofence("realtimeLocation", Pair(position.latitude, position.longitude), radius))
-                val sharedPreferences = getSharedPreferences("location", Context.MODE_PRIVATE)
+                val sharedPreferences = context.getSharedPreferences("location", Context.MODE_PRIVATE)
                 var startTime = sharedPreferences.getString("startTime", "") ?: ""
                 if(startTime.equals("")){
-                    addPlace(applicationContext, position.latitude, position.longitude)
+                    addPlace(context, position.latitude, position.longitude)
                 }
                 addGeofences(geofenceList)
                 mFusedLocationClient.removeLocationUpdates(this)
@@ -53,17 +54,6 @@ class GeofenceService:JobService() {
         }
     }
 
-    override fun onStopJob(params: JobParameters?): Boolean {
-
-        return true
-    }
-
-    override fun onStartJob(params: JobParameters?): Boolean {
-        //현재 위치 geofence등록
-        //pendingintent기억할 방법
-        scheduleGeofenceJob()
-        return true
-    }
 
     fun scheduleGeofenceJob(){
         locationRequest = LocationRequest()
@@ -72,7 +62,7 @@ class GeofenceService:JobService() {
             .setFastestInterval(FASTEST_UPDATE_INTERVAL_MS)
         val builder = LocationSettingsRequest.Builder()
         builder.addLocationRequest(locationRequest)
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         startLocationUpdates()
 
     }
@@ -88,8 +78,8 @@ class GeofenceService:JobService() {
 
     private fun addGeofences(geofenceList:MutableList<Geofence>) {
         val geofencePendingIntent: PendingIntent by lazy {
-            val intent = Intent(applicationContext, GeofenceBroadcastReceiver::class.java)
-            PendingIntent.getBroadcast(applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val intent = Intent(context, GeofenceBroadcastReceiver::class.java)
+            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
 //        geofencingClient.removeGeofences(mutableListOf("realtimeLocation"))
         geofencingClient.addGeofences(getGeofencingRequest(geofenceList), geofencePendingIntent).run {

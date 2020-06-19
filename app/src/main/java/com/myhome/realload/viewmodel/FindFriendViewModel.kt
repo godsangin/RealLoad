@@ -1,29 +1,25 @@
 package com.myhome.realload.viewmodel
 
 import android.content.ContentResolver
-import android.content.Context
 import android.provider.ContactsContract
 import android.util.Log
+import android.widget.Toast
 import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableField
-import com.myhome.realload.R
 import com.myhome.realload.model.ApiResponse
-import com.myhome.realload.model.Contact
+import com.myhome.realload.model.Friend
 import com.myhome.realload.model.User
 import com.myhome.realload.utils.RetrofitAPI
-import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
 
-class FindFriendViewModel(retrofitAPI: RetrofitAPI){
-    val contacts = ObservableArrayList<Contact>()
+class FindFriendViewModel(listner:FindFriendListener, retrofitAPI: RetrofitAPI){
+    val friends = ObservableArrayList<Friend>()
     val dataLoadEnd = ObservableField(false)
     val searchTel = ObservableField("")
     val retrofitAPI = retrofitAPI
+    val listener = ObservableField(listner)
 
 
     fun getContactList(contentResolver:ContentResolver){ // 너무오래걸림
@@ -50,10 +46,10 @@ class FindFriendViewModel(retrofitAPI: RetrofitAPI){
                             pCur?.getInt(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE))
                         val phoneNumber =
                             pCur?.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
-                        val contact = Contact()
-                        contact.name = name
-                        contact.tel = phoneNumber?.replace("/","")?.replace("\\","")?.replace("+82","0")?.replace("-","") ?:""
-                        contacts.add(contact)
+                        val friend = Friend()
+                        friend.nickName = name
+                        friend.tel = phoneNumber?.replace("/","")?.replace("\\","")?.replace("+82","0")?.replace("-","") ?:""
+                        friends.add(friend)
                         break
 
                     }
@@ -64,11 +60,13 @@ class FindFriendViewModel(retrofitAPI: RetrofitAPI){
     }
 
     fun searchFriend(){
-        Log.d("log==", searchTel.get())
+        friends.clear()
+        dataLoadEnd.set(false)
         val apiResult = retrofitAPI.getUserByTel(searchTel.get() ?: "")
         val retrofitCallback = object : Callback<ApiResponse> {
             override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
                 t.printStackTrace()
+                listener.get()?.showNetworkEnabledToast()
             }
 
             override fun onResponse(
@@ -76,11 +74,24 @@ class FindFriendViewModel(retrofitAPI: RetrofitAPI){
                 response: Response<ApiResponse>
             ) {
                 val result = response.body()
-                if (result?.resultCode == 200) {
+                if (result?.responseCode == 200) {
                     Log.d("result==", result.toString())
-                    val response = ((result.body?.get("user")
-                        ?: User()) as User)
-                    Log.d("result==", response.toString())
+                    val response = User.getInstance(result.body?.get("user") as Map<String, Any>)
+                    if(response.id == -1.toLong()){
+                        //메시지나 카톡으로 앱 깔기 유도
+                        dataLoadEnd.set(true)
+                        return
+                    }
+                    val friend = Friend()
+                    friend.nickName = response.name ?: ""
+                    friend.tel = response.tel ?: ""
+                    friend.uid = response.id
+                    //profileSource?
+                    friends.add(friend)
+                    dataLoadEnd.set(true)
+                }
+                else{
+                    listener.get()?.showNetworkEnabledToast()
                 }
             }
         }

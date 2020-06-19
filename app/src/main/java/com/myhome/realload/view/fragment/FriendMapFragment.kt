@@ -7,17 +7,16 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.util.DisplayMetrics
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,68 +25,75 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.*
-import com.myhome.realload.viewmodel.fragment.MapListener
-
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.myhome.realload.R
-import com.myhome.realload.databinding.FragmentMapBinding
+import com.myhome.realload.databinding.FragmentFriendMapBinding
 import com.myhome.realload.db.AppDatabase
 import com.myhome.realload.model.CustomPlace
+import com.myhome.realload.model.Friend
 import com.myhome.realload.model.NamedPlace
 import com.myhome.realload.model.Place
-import com.myhome.realload.model.PlaceLog
+import com.myhome.realload.utils.RetrofitAPI
 import com.myhome.realload.view.adapter.MapInfoWindowAdapter
-import com.myhome.realload.viewmodel.fragment.MapViewModel
-import kotlinx.android.synthetic.main.fragment_map.view.*
+import com.myhome.realload.viewmodel.fragment.FriendMapListener
+import com.myhome.realload.viewmodel.fragment.FriendMapViewModel
+import kotlinx.android.synthetic.main.fragment_friend_map.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener {
+class FriendMapFragment(friend:Friend) :Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener {
     companion object {
-        private var INSTANCE:MapFragment? = null
-        fun newInstance():MapFragment?{
+        private var INSTANCE:FriendMapFragment? = null
+        fun newInstance(friend:Friend):FriendMapFragment?{
             if(INSTANCE == null){
-                INSTANCE = MapFragment()
+                INSTANCE = FriendMapFragment(friend)
             }
             INSTANCE?.moveMapByLocation = true
             return INSTANCE
 
-        }
-
-        fun newInstance(place:Place):MapFragment?{
-            if(INSTANCE == null){
-                INSTANCE = MapFragment()
-            }
-            INSTANCE?.moveMapByLocation = false
-            INSTANCE?.defaultPlace = place
-
-            return INSTANCE
         }
     }
     var currentMarker: Marker? = null
     var mMap: GoogleMap? = null
     lateinit var currentPosition:LatLng
     val markers = ArrayList<Marker>()
-    var defaultPlace:Place? = null
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var location: Location
+    private lateinit var sharedPreferences:SharedPreferences
     private var mapFragment:SupportMapFragment? = null
     private var mapInfoWindowAdapter:MapInfoWindowAdapter? = null
+
     var moveMapByLocation = true
     var moveMapByUser = true
     var mRequestingLocationUpdates = false
-    var viewModel: MapViewModel? = null
+    var viewModel: FriendMapViewModel? = null
     var type = 0
     var marker_root_view:View? = null
     val arrayPoints = ArrayList<LatLng>()
+    val friend = friend
+    private lateinit var retrofit: Retrofit
+    private lateinit var retrofitAPI: RetrofitAPI
 
     private val UPDATE_INTERVAL_MS = 1000.toLong()
     private val FASTEST_UPDATE_INTERVAL_MS = 500.toLong()
@@ -111,45 +117,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         }
     }
 
-    val mapListener = object:
-        MapListener {
-        override fun setMarker(places: ArrayList<Place>) {
-            CoroutineScope(Dispatchers.Main).launch {
-                mMap?.clear()
-                for(marker in markers){
-                    marker.remove()
-                }
-                markers.clear()
-                mapInfoWindowAdapter?.places = places
-                var index = 1
-                for(place in places){
-                    if(place is NamedPlace){
-                        addMarker(place, place.name, place.startDate + " ~\n" + place.endDate, index++)
-                    }
-                    else{
-                        addMarker(place, "정의되지 않은 장소입니다.", place.startDate + " ~\n" + place.endDate + "\n" + "추가하기", index++)
-                    }
-                }
-            }
+    val mapListener = object:FriendMapListener{
+        override fun callPlaces(start: String, end: String) {
+            val uid = sharedPreferences.getLong("uid", -1)
+            callPlaces(start, end, uid)
         }
         override fun showDatePicker() {
             showDatePickerDialog()
-        }
-
-        override fun setPolyLine(logs: List<PlaceLog>) {
-            arrayPoints.clear()
-            CoroutineScope(Dispatchers.Main).launch {
-                mMap?.clear()
-
-                for(marker in markers){
-                    marker.remove()
-                }
-                markers.clear()
-                var index = 1
-                for(place in logs){
-                    addMarkerWithPolyLine(place, index.toString(), place.date, index++)
-                }
-            }
         }
     }
     val datepickerCallback = object: DatePickerDialog.OnDateSetListener{
@@ -200,15 +174,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         savedInstanceState: Bundle?
     ): View? {
 //        val view = inflater.inflate(R.layout.fragment_map, container, false)
-        val view = FragmentMapBinding.inflate(inflater, container, false)
+        val view = FragmentFriendMapBinding.inflate(inflater, container, false)
         marker_root_view = LayoutInflater.from(context).inflate(R.layout.marker_layout, null)
-        viewModel = MapViewModel(
-            mapListener,
-            AppDatabase.getInstance(context!!),
-            viewLifecycleOwner
-        )
+        viewModel = FriendMapViewModel(mapListener)
         view.model = viewModel
-        
+
         MapsInitializer.initialize(context)
         //배너광고
         MobileAds.initialize(context) {}
@@ -227,6 +197,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         builder.addLocationRequest(locationRequest)
         childFragmentManager.beginTransaction().replace(R.id.map, mapFragment!!).commit()
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
+        sharedPreferences = context!!.getSharedPreferences("userInfo", Context.MODE_PRIVATE)
+        setRetrofiInit()
         return view.root
     }
 
@@ -262,7 +234,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
 //            mMap = map
 //        }
         mMap = map
-        setDefaultLocation()
         startLocationUpdates()
         mMap?.mapType = GoogleMap.MAP_TYPE_NORMAL
         mMap?.uiSettings?.isMyLocationButtonEnabled = true
@@ -310,48 +281,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         }
     }
 
-    @SuppressLint("MissingPermission")
-    fun setDefaultLocation() {
-        //디폴트 위치, Seoul
-        moveMapByUser = false
-        val locationManager = context?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-        var DEFAULT_LOCATION:LatLng? = null
-        if(location == null){
-            DEFAULT_LOCATION = LatLng(37.566011, 126.977413)
-            Toast.makeText(context, getString(R.string.toast_gps_not_online), Toast.LENGTH_SHORT).show()
-        }
-        else{
-            DEFAULT_LOCATION = LatLng(location.latitude, location.longitude)
-        }
-
-        if(defaultPlace == null){
-            val markerTitle = "위치정보 가져올 수 없음"
-            val markerSnippet = "위치 퍼미션과 GPS 활성 여부 확인하세요"
-            if (currentMarker != null) currentMarker?.remove()
-
-            val markerOptions =  MarkerOptions()
-            markerOptions.position(DEFAULT_LOCATION)
-            markerOptions.title(markerTitle)
-            markerOptions.snippet(markerSnippet)
-            markerOptions.draggable(true)
-
-            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-        }
-        else{
-            DEFAULT_LOCATION = LatLng(defaultPlace!!.latitude, defaultPlace!!.longitude)
-            if(defaultPlace is NamedPlace){
-                addMarker(defaultPlace!!, (defaultPlace as NamedPlace).name, (defaultPlace as NamedPlace).name!!, -1)
-            }
-            else{
-                addMarker(defaultPlace!!, "nonamed", "nonamed", -1)
-            }
-
-        }
-
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, 15F)
-        mMap?.moveCamera(cameraUpdate)
-    }
     private fun startLocationUpdates() {
         val hasFineLocationPermission = ContextCompat.checkSelfPermission(
             context!!,
@@ -404,64 +333,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         }
     }
 
-    fun addMarkerWithPolyLine(log:PlaceLog, markerTitle: String?, markerSnippet: String?, position:Int){
-        val currentLatLng = LatLng(log.latitude, log.longitude)
-        val markerOptions = MarkerOptions()
-        markerOptions.position(currentLatLng)
-        markerOptions.title(markerTitle)
-        markerOptions.snippet(markerSnippet)
-        if(position > 0){
-            marker_root_view?.findViewById<TextView>(R.id.index_tv)?.setText(position.toString())
-            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(context, marker_root_view)));
-        }
-        else{
-            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-        }
-        mMap?.addMarker(markerOptions)?.let {
-            markers.add(it)
-        }
-        val polylineOptions = PolylineOptions()
-        polylineOptions.color(Color.RED)
-        arrayPoints.add(currentLatLng)
-        polylineOptions.addAll(arrayPoints)
-        mMap?.addPolyline(polylineOptions)
-    }
-
-    fun showCreateCustomPlaceDialog(position:LatLng?){
-        if(position == null) return
-        val edittext = EditText(context)
-        val builder = AlertDialog.Builder(activity)
-            .setTitle(getString(R.string.dialog_create_place_title))
-            .setMessage(getString(R.string.dialog_create_place_content))
-            .setView(edittext)
-            .setPositiveButton(getString(R.string.submit), object:DialogInterface.OnClickListener{
-                override fun onClick(dialog: DialogInterface?, which: Int) {
-                    if(edittext.text.toString().equals("")){
-                        Toast.makeText(context, getString(R.string.toast_place_not_inputted_text), Toast.LENGTH_SHORT).show()
-                    }
-                    else{
-                        val myPlace = CustomPlace()
-                        myPlace.latitude = position.latitude
-                        myPlace.longitude = position.longitude
-                        myPlace.name = edittext.text.toString()
-                        CoroutineScope(Dispatchers.IO).launch {
-                            AppDatabase.getInstance(context!!)?.CustomPlaceDao()?.insert(myPlace)
-                            CoroutineScope(Dispatchers.Main).launch {
-                                Toast.makeText(context, getString(R.string.toast_place_saved), Toast.LENGTH_SHORT).show()
-                                viewModel?.refreshData()
-                            }
-                        }
-                    }
-                }
-            })
-            .setNegativeButton(getString(R.string.cancel), object:DialogInterface.OnClickListener{
-                override fun onClick(dialog: DialogInterface?, which: Int) {
-
-                }
-            })
-        builder.show()
-    }
-
     fun showDatePickerDialog(){
 
         val cal = GregorianCalendar()
@@ -495,5 +366,104 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerClickListe
         return bitmap
     }
 
+    fun showCreateCustomPlaceDialog(position:LatLng?){
+        if(position == null) return
+        val edittext = EditText(context)
+        val builder = AlertDialog.Builder(activity)
+            .setTitle(getString(R.string.dialog_create_place_title))
+            .setMessage(getString(R.string.dialog_create_place_content))
+            .setView(edittext)
+            .setPositiveButton(getString(R.string.submit), object: DialogInterface.OnClickListener{
+                override fun onClick(dialog: DialogInterface?, which: Int) {
+                    if(edittext.text.toString().equals("")){
+                        Toast.makeText(context, getString(R.string.toast_place_not_inputted_text), Toast.LENGTH_SHORT).show()
+                    }
+                    else{
+                        val myPlace = CustomPlace()
+                        myPlace.latitude = position.latitude
+                        myPlace.longitude = position.longitude
+                        myPlace.name = edittext.text.toString()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            AppDatabase.getInstance(context!!)?.CustomPlaceDao()?.insert(myPlace)
+                            CoroutineScope(Dispatchers.Main).launch {
+                                Toast.makeText(context, getString(R.string.toast_place_saved), Toast.LENGTH_SHORT).show()
+                                viewModel?.refreshData()
+                            }
+                        }
+                    }
+                }
+            })
+            .setNegativeButton(getString(R.string.cancel), object: DialogInterface.OnClickListener{
+                override fun onClick(dialog: DialogInterface?, which: Int) {
 
+                }
+            })
+        builder.show()
+    }
+
+    fun setPlaces(places:ArrayList<Place>){
+        CoroutineScope(Dispatchers.Main).launch {
+            mMap?.clear()
+            for(marker in markers){
+                marker.remove()
+            }
+            markers.clear()
+            mapInfoWindowAdapter?.places = places
+            var index = 1
+            for(place in places){
+                if(place is NamedPlace){
+                    addMarker(place, place.name, place.startDate + " ~\n" + place.endDate, index++)
+                }
+                else{
+                    addMarker(place, "정의되지 않은 장소입니다.", place.startDate + " ~\n" + place.endDate + "\n" + "추가하기", index++)
+                }
+            }
+        }
+    }
+
+    fun setRetrofiInit(){
+        val client = OkHttpClient.Builder()
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS).build()
+        retrofit = Retrofit.Builder()
+            .baseUrl(getString(R.string.apiUrl))
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        retrofitAPI = retrofit.create(RetrofitAPI::class.java)
+    }
+
+    fun callPlaces(start:String, end:String, uid:Long){
+        val apiResult = retrofitAPI.getPlaces(uid, start, end)
+        val retrofitCallback = object : Callback<JsonObject> {
+            override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                t.printStackTrace()
+                Toast.makeText(context, context?.getString(R.string.toast_network_enabled), Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onResponse(
+                call: Call<JsonObject>,
+                response: Response<JsonObject>
+            ) {
+                val result = response.body()
+                if((result?.get("responseCode")?.asInt) == 200) {
+                    val bodyArray = result?.get("body")?.asJsonArray ?: JsonArray()
+                    val places = ArrayList<Place>()
+                    for(placeMap in bodyArray){
+                        val place = Place()
+                        place.longitude = placeMap.asJsonObject.get("longitude").asDouble
+                        place.latitude = placeMap.asJsonObject.get("latitude").asDouble
+                        place.startDate = placeMap.asJsonObject.get("startDate").asString
+                        place.endDate = placeMap.asJsonObject.get("endDate").asString
+                        places.add(place)
+                    }
+                    setPlaces(places)
+                }
+                else{
+                    Toast.makeText(context, context?.getString(R.string.toast_network_enabled), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        apiResult.enqueue(retrofitCallback)
+    }
 }

@@ -21,6 +21,9 @@
     <string name="toast_permission_denied">애플리케이션을 사용하기 위한 권한을 허용해주세요.</string>
     <string name="toast_permisssion_background_denied">애플리케이션 사용을 위해 백그라운드 환경에서 위치 정보를 수신할 수 있는 권한이 필요합니다.</string>
     <string name="toast_finish_app">\'뒤로\' 버튼을 한번 더 누르면 종료됩니다.</string>
+    <string name="toast_network_enabled">네트워크가 불안전하거나 서버로부터 응답을 받을 수 없습니다.</string>
+    <string name="toast_send_friend_request">친구 요청을 보냈습니다.</string>
+    <string name="toast_location_permission_denied">친구로부터 위치 수신 권한을 부여받지 않았습니다.</string>
     <string name="permission_background_guide">앱의 동작을 위해 위치 정보를 항상 수신할 수 있어야 합니다.\n아래 권한 설정에서 백그라운드 위치 수신을 항상 허용으로 설정해주세요. </string>
     <string name="default_notification_channel_id">my_noti_channel</string>
     <string name="push_noti_title_message">푸시 알림 수신</string>
@@ -49,7 +52,11 @@
     <string name="realload_report">RealLoad 의견 </string>
     <string name="kakao_app_key">b08101467419ec64891fdbb8ad76e489</string>
     <string name="search_editor_hint">전화번호를 입력해주세요.</string>
-    <string name="apiUrl">http://175.114.99.171:8080</string>
+    <string name="dialog_friend_info_allowed">내가 친구의 위치를 볼 수 있습니다.(친구가 허용해야 합니다)</string>
+    <string name="dialog_friend_info_allow">친구가 내위치를 볼 수 있습니다.</string>
+    <string name="dialog_show_friend_info_button">방문 정보</string>
+    <string name="friend_item_waiting_request">친구요청 응답 대기중..</string>
+    <string name="apiUrl">http://54.180.112.230:8080</string>
     <string-array name="splash_strings">
         <item>애플리케이션을 사용하기 위해서는 위치서비스를 백그라운드 환경에서도 접근할 수 있는 권한이 필요합니다.</item>
         <item>이동경로 보기 기능을 사용해보세요. 오늘 움직인 이동경로를 확인할 수 있습니다.</item>
