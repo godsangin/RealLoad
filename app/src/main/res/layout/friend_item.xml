@@ -42,6 +42,14 @@
             android:text="@string/friend_item_waiting_request"
             android:visibility="@{model.friend.allowedPermission == -1 ? View.VISIBLE : View.GONE}"
             />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:visibility="@{model.friend.allowedPermission == -2 ? View.VISIBLE : View.GONE}"
+            android:onClick="@{() -> model.allowRequest()}"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

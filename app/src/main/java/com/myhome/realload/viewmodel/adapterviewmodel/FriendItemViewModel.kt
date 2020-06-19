@@ -13,7 +13,10 @@ class FriendItemViewModel(listener: FriendListener?, friend:Friend) {
         listener?.showFriendInfo(friend)
     }
 
-    fun addSlot(){
-
+    fun allowRequest(){
+        friend.allowedPermission = 0
+        listener?.allowRequest(friend)
     }
+
+
 }

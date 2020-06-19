@@ -36,6 +36,8 @@ import java.util.concurrent.TimeUnit
 class FriendFragment : Fragment() {
     private lateinit var retrofit: Retrofit
     private lateinit var retrofitAPI: RetrofitAPI
+    lateinit var viewModel:FriendViewModel
+    var uid:Long = -1
     val friendListener = object:
         FriendListener {
         override fun goSearchFriendActivity() {
@@ -50,6 +52,10 @@ class FriendFragment : Fragment() {
             intent.putExtra("friend", friend)
             startActivity(intent)
         }
+
+        override fun allowRequest(friend: Friend) {
+            allowFriendRequest(friend)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,23 +67,19 @@ class FriendFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val viewModel =
+        viewModel =
             FriendViewModel(friendListener)
         val sharedPreferences = context?.getSharedPreferences("userInfo", Context.MODE_PRIVATE)
         val fdatabase = FriendDatabase.getInstance(context!!)
-        val uid = sharedPreferences?.getLong("uid", -1.toLong()) ?: -1.toLong()
+        uid = sharedPreferences?.getLong("uid", -1.toLong()) ?: -1.toLong()
         val binding = DataBindingUtil.inflate<FragmentFriendBinding>(inflater, R.layout.fragment_friend, container, false)
         binding.model = viewModel
-//        for(i in 0..3){
-//            val friend = Friend()
-//            friend.nickName = "이상인"
-//            friend.profileUrl = ""
-//            viewModel.friends.add(friend)
-//        }
-        viewModel.getFriendsData(fdatabase, viewLifecycleOwner)
+
         if(uid != -1.toLong()){
             setRetrofiInit(context!!)
             getFriendsDataSyn(fdatabase, uid)
+            getFriendsRequest(uid)
+            viewModel.getFriendsData(fdatabase, viewLifecycleOwner)
         }
         return binding.root
     }
@@ -123,6 +125,57 @@ class FriendFragment : Fragment() {
                             }
                         }
                     }
+                }
+
+            }
+        }
+        apiResult.enqueue(retrofitCallback)
+    }
+
+    fun getFriendsRequest(uid:Long){
+        val apiResult = retrofitAPI.getFriendRequests(uid)
+        val retrofitCallback = object : Callback<JsonObject> {
+            override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                t.printStackTrace()
+            }
+
+            override fun onResponse(
+                call: Call<JsonObject>,
+                response: Response<JsonObject>
+            ) {
+                val result = response.body()
+                if((result?.get("responseCode")?.asInt) == 200){
+                    val bodyArray = result?.get("body")?.asJsonArray ?: JsonArray()
+                    val friends = ArrayList<Friend>()
+                    for(userResult in bodyArray){
+                        val friend = Friend()
+                        friend.nickName = userResult.asJsonObject.get("name").asString
+                        friend.allowedPermission = -2
+                        friend.id = userResult.asJsonObject.get("id").asLong
+                        friends.add(friend)
+                    }
+                    viewModel.friends.addAll(friends)
+                }
+
+            }
+        }
+        apiResult.enqueue(retrofitCallback)
+    }
+
+    fun allowFriendRequest(friend:Friend){
+        val apiResult = retrofitAPI.allowFriendRequest(uid, friend.uid)
+        val retrofitCallback = object : Callback<JsonObject> {
+            override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                t.printStackTrace()
+            }
+
+            override fun onResponse(
+                call: Call<JsonObject>,
+                response: Response<JsonObject>
+            ) {
+                val result = response.body()
+                if((result?.get("responseCode")?.asInt) == 200){
+
                 }
 
             }
