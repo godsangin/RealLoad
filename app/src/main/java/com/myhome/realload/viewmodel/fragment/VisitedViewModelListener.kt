@@ -1,4 +1,4 @@
-package com.myhome.realload.viewmodel
+package com.myhome.realload.viewmodel.fragment
 
 import android.app.DatePickerDialog
 

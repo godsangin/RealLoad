@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
     <data>
+        <import type="android.view.View"/>
         <variable
             name="model"
             type="com.myhome.realload.viewmodel.adapterviewmodel.FriendItemViewModel" />
@@ -11,7 +12,8 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:padding="8dp"
         android:layout_margin="8dp"
-        android:background="@drawable/underline">
+        android:background="@drawable/underline"
+        android:onClick="@{() -> model.showFriendInfo()}">
         <ImageView
             android:id="@+id/profile_img"
             android:layout_width="40dp"
@@ -30,15 +32,16 @@
             app:layout_constraintLeft_toRightOf="@id/profile_img"
             android:text="@{model.nickName}"
             android:layout_margin="8dp"/>
-        <Button
-            android:id="@+id/slot_add_bt"
+        <TextView
+            android:id="@+id/waiting_response_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:text="슬롯 추가"/>
-
+            android:text="@string/friend_item_waiting_request"
+            android:visibility="@{model.friend.allowedPermission == -1 ? View.VISIBLE : View.GONE}"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

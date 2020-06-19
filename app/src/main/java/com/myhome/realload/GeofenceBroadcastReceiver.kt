@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import com.google.android.gms.location.*
 import com.myhome.realload.db.AppDatabase
 import com.myhome.realload.model.ApiResponse
@@ -121,7 +122,7 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
                     database.PlaceDao().update(place)
                     //send place update to server
                     if(uid != -1.toLong()) {
-                        doPlaceInsert(uid, place)
+                        doPlaceInsert(context, uid, place)
                     }
                 }
             }catch(e:Exception){
@@ -243,11 +244,13 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
         retrofitAPI = retrofit.create(RetrofitAPI::class.java)
     }
 
-    fun doPlaceInsert(uid:Long, place:Place){
+    fun doPlaceInsert(context:Context, uid:Long, place:Place){
         val apiResult = retrofitAPI.insertPlace(uid, place)
+//        Toast.makeText(context, "실행은됌", Toast.LENGTH_SHORT).show()
         val retrofitCallback = object : Callback<ApiResponse> {
             override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
                 t.printStackTrace()
+                Toast.makeText(context, context.getString(R.string.toast_network_enabled), Toast.LENGTH_SHORT).show()
             }
 
             override fun onResponse(
@@ -255,11 +258,11 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
                 response: Response<ApiResponse>
             ) {
                 val result = response.body()
-                if (result?.resultCode == 200) {
-                    Log.d("result==", result.toString())
-                    val response = ((result.body?.get("result")
-                        ?: "false") as String).toBoolean()
-                    Log.d("result==", response.toString())
+                if (result?.responseCode == 200) {
+
+                }
+                else{
+                    Toast.makeText(context, context.getString(R.string.toast_network_enabled), Toast.LENGTH_SHORT).show()
                 }
             }
         }

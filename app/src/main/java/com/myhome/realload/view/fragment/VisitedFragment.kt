@@ -13,12 +13,13 @@ import com.myhome.realload.R
 import com.myhome.realload.databinding.FragmentVisitedBinding
 import com.myhome.realload.db.AppDatabase
 
-import com.myhome.realload.viewmodel.VisitedViewModel
-import com.myhome.realload.viewmodel.VisitedViewModelListener
+import com.myhome.realload.viewmodel.fragment.VisitedViewModel
+import com.myhome.realload.viewmodel.fragment.VisitedViewModelListener
 
 class VisitedFragment : Fragment() {
     var fragmentListener:FragmentListener? = null
-    val visitedViewModelListener = object:VisitedViewModelListener{
+    val visitedViewModelListener = object:
+        VisitedViewModelListener {
         override fun createDatePicker(listener: DatePickerDialog.OnDateSetListener) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 val dialog = DatePickerDialog(context!!)
@@ -37,7 +38,12 @@ class VisitedFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val binding = DataBindingUtil.inflate<FragmentVisitedBinding>(inflater, R.layout.fragment_visited, container, false)
-        val viewModel = VisitedViewModel(fragmentListener, visitedViewModelListener, viewLifecycleOwner, AppDatabase.getInstance(context!!))
+        val viewModel = VisitedViewModel(
+            fragmentListener,
+            visitedViewModelListener,
+            viewLifecycleOwner,
+            AppDatabase.getInstance(context!!)
+        )
         binding.model = viewModel
         viewModel.getBaseData()
         return binding.root

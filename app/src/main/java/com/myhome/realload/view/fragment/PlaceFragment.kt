@@ -1,7 +1,6 @@
 package com.myhome.realload.view.fragment
 
 import android.app.Activity
-import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
@@ -11,30 +10,22 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.GeofencingClient
-import com.google.android.gms.location.GeofencingRequest
-import com.google.android.gms.location.LocationServices
-import com.myhome.realload.CustomGeofenceBroadcastReceiver
 import com.myhome.realload.CustomGeofenceService
-import com.myhome.realload.GeofenceService
 
 import com.myhome.realload.R
 import com.myhome.realload.databinding.FragmentPlaceBinding
 import com.myhome.realload.db.AppDatabase
-import com.myhome.realload.model.CustomPlace
 import com.myhome.realload.model.Image
 import com.myhome.realload.model.NamedPlace
 import com.myhome.realload.utils.ImageDBController
-import com.myhome.realload.viewmodel.PlaceViewModel
-import com.myhome.realload.viewmodel.PlaceViewModelListener
+import com.myhome.realload.viewmodel.fragment.PlaceViewModel
+import com.myhome.realload.viewmodel.fragment.PlaceViewModelListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,10 +34,11 @@ import java.io.File
 class PlaceFragment : Fragment() {
 
     val REQUESTCODE_ALBUM = 1000
-    lateinit var viewModel:PlaceViewModel
+    lateinit var viewModel: PlaceViewModel
     var placeIndex:NamedPlace? = null
     var imageDBController:ImageDBController? = null
-    val placeListener = object:PlaceViewModelListener{
+    val placeListener = object:
+        PlaceViewModelListener {
         override fun addGeofence(place: NamedPlace) {
             startJobService()
         }
@@ -95,7 +87,9 @@ class PlaceFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val binding = DataBindingUtil.inflate<FragmentPlaceBinding>(inflater, R.layout.fragment_place, container, false)
-        viewModel = PlaceViewModel(AppDatabase.getInstance(context!!), placeListener)
+        viewModel = PlaceViewModel(
+            AppDatabase.getInstance(context!!), placeListener
+        )
         binding.model = viewModel
         viewModel.getBaseData(viewLifecycleOwner, AppDatabase.getInstance(context!!))
         return binding.root

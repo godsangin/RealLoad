@@ -3,7 +3,7 @@
     <data>
         <variable
             name="model"
-            type="com.myhome.realload.viewmodel.FriendViewModel" />
+            type="com.myhome.realload.viewmodel.fragment.FriendViewModel" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -21,7 +21,8 @@
                 android:id="@+id/friend_recyclerview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                bind_item="@{model.friends}"
+                bind_friend_item="@{model.friends}"
+                bind_listener="@{model.friendListener}"
                 />
         </ScrollView>
         <Button

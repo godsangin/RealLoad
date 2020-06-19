@@ -100,6 +100,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 user.name = nickName
                 user.tel = getTelNum()
                 user.activeDate = format.format(Date())
+                user.profileUrl = profileUrl
                 val apiResult = retrofitAPI.insertUser(user)
                 val retrofitCallback = object:Callback<ApiResponse>{
                     override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
@@ -110,7 +111,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                         val result = response.body()
                         Log.d("response==", response.toString())
                         Log.d("result==", result.toString())
-                        if(result?.resultCode == 200){
+                        if(result?.responseCode == 200){
                             val uid = ((result.body?.get("uid") ?: "-1") as String).toLong()
                             val editor = sharedPreferences.edit()
                             editor.putLong("uid", uid)
@@ -120,6 +121,9 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                     }
                 }
                 apiResult.enqueue(retrofitCallback)
+            }
+            else{
+                //updateProfile
             }
         }
 
@@ -202,14 +206,16 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
 
     fun startJobService(){
-        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        val componentName = ComponentName(this, GeofenceService::class.java)
-        val builder = JobInfo.Builder(1, componentName)
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-//        builder.setRequiresBatteryNotLow(true)
-        builder.setRequiresCharging(false)
-        val jobInfo = builder.build()
-        jobScheduler.schedule(jobInfo)
+//        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+//        val componentName = ComponentName(this, GeofenceService::class.java)
+//        val builder = JobInfo.Builder(1, componentName)
+//        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+////        builder.setRequiresBatteryNotLow(true)
+//        builder.setRequiresCharging(false)
+//        val jobInfo = builder.build()
+//        jobScheduler.schedule(jobInfo)
+        val job = GeofenceInitialJob(applicationContext)
+        job.scheduleGeofenceJob()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -402,6 +408,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         val nickName = sharedPreferences.getString("nickName","")
         val format = SimpleDateFormat("yyyy-MM-dd")
         val user = User()
+        user.id = uid
         user.tokenId = tokenId
         user.name = nickName
         user.tel = getTelNum()
@@ -412,18 +419,21 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
         else{
             //activeDate update
-            val apiResult = retrofitAPI.updateUser(user.id, user)
+            val apiResult = retrofitAPI.updateUser(user)
             val retrofitCallback = object:Callback<ApiResponse>{
                 override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
                     t.printStackTrace()
+                    Toast.makeText(applicationContext, getString(R.string.toast_network_enabled), Toast.LENGTH_SHORT).show()
                 }
 
                 override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                    Log.d("result==", response.toString())
                     val result = response.body()
-                    if(result?.resultCode == 200){
-                        Log.d("result==", result.toString())
+                    if(result?.responseCode == 200){
                         val response = ((result.body?.get("result") ?: "false") as String).toBoolean()
-                        Log.d("result==", response.toString())
+                    }
+                    else{
+                        Toast.makeText(applicationContext, getString(R.string.toast_network_enabled), Toast.LENGTH_SHORT).show()
                     }
                 }
             }

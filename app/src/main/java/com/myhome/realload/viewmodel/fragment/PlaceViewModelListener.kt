@@ -1,4 +1,4 @@
-package com.myhome.realload.viewmodel
+package com.myhome.realload.viewmodel.fragment
 
 import androidx.lifecycle.LifecycleOwner
 import com.myhome.realload.db.AppDatabase

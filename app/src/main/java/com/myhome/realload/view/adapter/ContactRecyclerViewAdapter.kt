@@ -4,13 +4,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.myhome.realload.databinding.ContactItemBinding
-import com.myhome.realload.model.Contact
+import com.myhome.realload.model.Friend
+import com.myhome.realload.viewmodel.FindFriendListener
+import com.myhome.realload.viewmodel.adapterviewmodel.ContactItemViewModel
 
-class ContactRecyclerViewAdapter :RecyclerView.Adapter<ContactRecyclerViewAdapter.ViewHolder>(){
-    var items = ArrayList<Contact>()
+class ContactRecyclerViewAdapter(listener:FindFriendListener?) :RecyclerView.Adapter<ContactRecyclerViewAdapter.ViewHolder>(){
+    var items = ArrayList<Friend>()
+    val listener = listener
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ContactItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
+        return ViewHolder(binding, listener)
     }
 
     override fun getItemCount(): Int {
@@ -21,10 +24,12 @@ class ContactRecyclerViewAdapter :RecyclerView.Adapter<ContactRecyclerViewAdapte
         holder.bind(items[position])
     }
 
-    class ViewHolder(binding:ContactItemBinding):RecyclerView.ViewHolder(binding.root){
+    class ViewHolder(binding:ContactItemBinding, listener:FindFriendListener?):RecyclerView.ViewHolder(binding.root){
         val binding = binding
-        fun bind(contact:Contact){
-            binding.model = contact
+        val listener = listener
+        fun bind(friend:Friend){
+            val viewModel = ContactItemViewModel(listener, friend)
+            binding.model = viewModel
         }
     }
 }

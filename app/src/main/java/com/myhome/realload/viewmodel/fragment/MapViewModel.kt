@@ -1,9 +1,7 @@
-package com.myhome.realload.viewmodel
+package com.myhome.realload.viewmodel.fragment
 
-import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LifecycleOwner
-import com.myhome.realload.MapListener
 import com.myhome.realload.db.AppDatabase
 import com.myhome.realload.model.NamedPlace
 import com.myhome.realload.model.Place
@@ -15,7 +13,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MapViewModel(listener:MapListener, database: AppDatabase?, lifecycleOwner: LifecycleOwner):LocationCirculator() {
+class MapViewModel(listener: MapListener, database: AppDatabase?, lifecycleOwner: LifecycleOwner):LocationCirculator() {
     val period = ObservableField<Int>()
     val listener = listener
     val database = database

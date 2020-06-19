@@ -3,7 +3,7 @@
     <data>
         <variable
             name="model"
-            type="com.myhome.realload.viewmodel.PlaceViewModel" />
+            type="com.myhome.realload.viewmodel.fragment.PlaceViewModel" />
     </data>
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"

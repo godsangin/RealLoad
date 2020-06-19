@@ -3,7 +3,7 @@
     <data>
         <variable
             name="model"
-            type="com.myhome.realload.model.Contact" />
+            type="com.myhome.realload.viewmodel.adapterviewmodel.ContactItemViewModel" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@id/profile_img"
-            android:text="@{model.name}"
+            android:text="@{model.friend.nickName}"
             android:layout_margin="8dp"/>
 
         <TextView
@@ -37,7 +37,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@id/name"
-            android:text="@{model.tel}"
+            android:text="@{model.friend.tel}"
             android:layout_margin="8dp"/>
         <Button
             android:id="@+id/add_friend"
@@ -46,6 +46,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
+            android:onClick="@{() -> model.addFriend()}"
             android:text="친구 추가"/>
 
 
