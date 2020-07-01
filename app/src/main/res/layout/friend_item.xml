@@ -48,7 +48,9 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:visibility="@{model.friend.allowedPermission == -2 ? View.VISIBLE : View.GONE}"
+            android:text="@string/button_allow_friend"
+            android:background="@drawable/textlines"
+            android:visibility="@{model.buttonVisibility ? View.VISIBLE : View.GONE}"
             android:onClick="@{() -> model.allowRequest()}"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

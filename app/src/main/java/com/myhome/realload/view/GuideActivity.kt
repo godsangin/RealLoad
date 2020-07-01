@@ -38,6 +38,9 @@ class GuideActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItem
                     third_image.clearAnimation()
                     fourth_image.startAnimation(AnimationUtils.loadAnimation(applicationContext, R.anim.scale_up_down))
                 }
+                else -> {
+                    finish()
+                }
             }
         }
     }

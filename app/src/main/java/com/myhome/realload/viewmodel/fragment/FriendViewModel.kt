@@ -10,9 +10,16 @@ import com.myhome.realload.viewmodel.fragment.FriendListener
 
 class FriendViewModel(friendListener: FriendListener) {
     val friends = ObservableArrayList<Friend>()
+    var requests = ArrayList<Friend>()
     val friendListener = ObservableField(friendListener)
     fun findFriends(){
         friendListener.get()?.goSearchFriendActivity()
+    }
+
+    fun notifyRequestListChanged(){
+        requests.addAll(friends)
+        friends.clear()
+        friends.addAll(requests)
     }
 
     fun getFriendsData(database:FriendDatabase?, owner: LifecycleOwner){
@@ -21,6 +28,7 @@ class FriendViewModel(friendListener: FriendListener) {
         }
         database.FriendDao().getAllFriend().observe(owner, Observer {
             friends.clear()
+            friends.addAll(requests)
             for(friend in it){
                 if(friend.allowedPermission == -1){
                     // 응답이 이루어졌는지 확인

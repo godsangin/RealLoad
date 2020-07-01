@@ -22,11 +22,20 @@ android {
             }
         }
     }
+    signingConfigs {
+        release {
+            storeFile file('mykey.jks') // 기준은 App 폴더 기준이다.
+            storePassword "cca06151"
+            keyAlias "key0"
+            keyPassword "cca06151"
+        }
+    }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 
@@ -42,6 +51,7 @@ android {
     sourceSets {
         test.assets.srcDirs += files("$projectDir/schemas".toString())
     }
+
 }
 
 dependencies {

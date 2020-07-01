@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.view.MenuItem
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.InterstitialAd
 import com.myhome.realload.R
 import com.myhome.realload.model.Friend
 import com.myhome.realload.view.fragment.FriendMapFragment
@@ -16,6 +18,7 @@ class FriendLocationActivity : AppCompatActivity() {
     lateinit var fragmentTransaction: FragmentTransaction
     lateinit var sharedPreferences: SharedPreferences
     private lateinit var friend:Friend
+    private lateinit var mInterstitialAd:InterstitialAd
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +36,11 @@ class FriendLocationActivity : AppCompatActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setTitle(friend.nickName + "님의 방문정보")
+
+        mInterstitialAd = InterstitialAd(this)
+        mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712"
+        mInterstitialAd.loadAd(AdRequest.Builder().build())
+        mInterstitialAd.show()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

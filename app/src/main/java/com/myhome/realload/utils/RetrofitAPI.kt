@@ -33,6 +33,8 @@ interface RetrofitAPI {
     fun getFriends(@Path("uid") uid:Long):Call<JsonObject>
     @GET("/friends/requests/{uid}")
     fun getFriendRequests(@Path("uid") uid:Long):Call<JsonObject>
+    @GET("/friends/{fromUid}/{toUid}")
+    fun getFriendPermission(@Path("fromUid") fromUid:Long, @Path("toUid") toUid:Long):Call<JsonObject>
     @PUT("/friends/{fromUid}/{toUid}")
     fun allowFriendRequest(@Path("fromUid") fromUid:Long, @Path("toUid") toUid:Long):Call<JsonObject>
     @PUT("/friends")

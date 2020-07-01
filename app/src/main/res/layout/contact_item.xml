@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
     <data>
+        <import type="android.view.View"/>
         <variable
             name="model"
             type="com.myhome.realload.viewmodel.adapterviewmodel.ContactItemViewModel" />
@@ -47,7 +48,9 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             android:onClick="@{() -> model.addFriend()}"
-            android:text="친구 추가"/>
+            android:visibility="@{model.friend.allowedPermission == 0 ? View.GONE : View.VISIBLE}"
+            android:text="친구 추가"
+            android:background="@drawable/textlines"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

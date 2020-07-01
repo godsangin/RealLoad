@@ -11,14 +11,16 @@ class GuideViewModel(listener:GuideListener, arrayGuideText:ArrayList<String>) {
 
     fun getNextGuide(){
         guideIndex.get()?.let {
-            if(it == 3){
+            if(it >= 3){
                 //intent event
                 listener.finishGuide()
                 return@let
             }
-            listener.nextGuideAnim()
-            guideIndex.set(it + 1)
-            guideText.set(arrayGuideText.get(guideIndex.get() ?: 0))
+            else{
+                listener.nextGuideAnim()
+                guideIndex.set(it + 1)
+                guideText.set(arrayGuideText.get(guideIndex.get() ?: 0))
+            }
         }
     }
 }

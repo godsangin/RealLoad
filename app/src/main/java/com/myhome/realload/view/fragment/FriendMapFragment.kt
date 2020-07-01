@@ -120,7 +120,7 @@ class FriendMapFragment(friend:Friend) :Fragment(), OnMapReadyCallback, GoogleMa
     val mapListener = object:FriendMapListener{
         override fun callPlaces(start: String, end: String) {
             val uid = sharedPreferences.getLong("uid", -1)
-            callPlaces(start, end, uid)
+            callPlaces(start, end, friend.uid)
         }
         override fun showDatePicker() {
             showDatePickerDialog()
