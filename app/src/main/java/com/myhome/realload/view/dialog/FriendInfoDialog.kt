@@ -1,23 +1,21 @@
 package com.myhome.realload.view.dialog
 
 import android.app.Activity
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import android.view.Window
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import com.google.gson.JsonArray
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.InterstitialAd
 import com.google.gson.JsonObject
 import com.myhome.realload.R
 import com.myhome.realload.databinding.DialogFriendInfoBinding
 import com.myhome.realload.db.FriendDatabase
 import com.myhome.realload.model.Friend
-import com.myhome.realload.model.User
+import com.myhome.realload.utils.InterstitialAdController
 import com.myhome.realload.utils.RetrofitAPI
 import com.myhome.realload.view.FriendLocationActivity
 import com.myhome.realload.viewmodel.dialog.FriendInfoViewModel
@@ -36,6 +34,9 @@ class FriendInfoDialog : Activity() {
     private lateinit var retrofit: Retrofit
     private lateinit var retrofitAPI: RetrofitAPI
     private lateinit var friend:Friend
+    private lateinit var viewModel:FriendInfoViewModel
+
+    private lateinit var mInterstitialAd: InterstitialAd
     val friendInfoDialogListener = object:FriendInfoDialogListener{
         override fun allowPermission(permission: Boolean) {
             callPermissionMessage(friend, permission)
@@ -58,12 +59,18 @@ class FriendInfoDialog : Activity() {
 
         val intent = getIntent()
         friend = intent.getParcelableExtra<Friend>("friend")
-        Log.d("friend==", friend.toString())
 
         val binding = DataBindingUtil.setContentView<DialogFriendInfoBinding>(this, R.layout.dialog_friend_info)
-        val viewModel = FriendInfoViewModel(friend, friendInfoDialogListener)
+        viewModel = FriendInfoViewModel(friend, friendInfoDialogListener)
         binding.model = viewModel
         setRetrofiInit(applicationContext)
+        setPermissionAllowed()
+        mInterstitialAd = InterstitialAd(this)
+        mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712"
+        if(InterstitialAdController.getInstance()?.load() ?: false){
+            mInterstitialAd.loadAd(AdRequest.Builder().build())
+            mInterstitialAd.show()
+        }
     }
     fun setRetrofiInit(context: Context){
         val client = OkHttpClient.Builder()
@@ -77,6 +84,31 @@ class FriendInfoDialog : Activity() {
         retrofitAPI = retrofit.create(RetrofitAPI::class.java)
     }
 
+    fun setPermissionAllowed(){
+        val sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE)
+        val uid = sharedPreferences.getLong("uid", -1)
+        if(uid == -1.toLong()){
+            return
+        }
+        val apiResult = retrofitAPI.getFriendPermission(friend.uid, uid)
+        val retrofitCallback = object : Callback<JsonObject> {
+            override fun onFailure(call: Call<JsonObject>, t: Throwable) {
+                t.printStackTrace()
+            }
+
+            override fun onResponse(
+                call: Call<JsonObject>,
+                response: Response<JsonObject>
+            ) {
+                val result = response.body()
+                val responseCode = result?.get("responseCode")?.asInt
+                val allowedPermission = result?.get("body")?.asInt
+                viewModel.allowedPermission.set(if(allowedPermission==0) false else true)
+            }
+        }
+        apiResult.enqueue(retrofitCallback)
+    }
+
     fun callPermissionMessage(friend:Friend, permission:Boolean){
         val sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE)
         val uid = sharedPreferences.getLong("uid", -1)
@@ -85,7 +117,6 @@ class FriendInfoDialog : Activity() {
         }
         friend.allowedPermission = if(permission) 1 else 0
         val map = HashMap<String, Any>()
-        Log.d("log==", friend.toString())
         map.put("id", friend.id)
         map.put("fromUid", uid)
         map.put("toUid", friend.uid)

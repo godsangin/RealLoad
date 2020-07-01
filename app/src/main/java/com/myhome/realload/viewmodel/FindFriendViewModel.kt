@@ -6,20 +6,26 @@ import android.util.Log
 import android.widget.Toast
 import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableField
+import com.myhome.realload.db.FriendDatabase
 import com.myhome.realload.model.ApiResponse
 import com.myhome.realload.model.Friend
 import com.myhome.realload.model.User
 import com.myhome.realload.utils.RetrofitAPI
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class FindFriendViewModel(listner:FindFriendListener, retrofitAPI: RetrofitAPI){
+class FindFriendViewModel(listner:FindFriendListener, retrofitAPI: RetrofitAPI, database:FriendDatabase?){
     val friends = ObservableArrayList<Friend>()
-    val dataLoadEnd = ObservableField(false)
+    val dataLoadEnd = ObservableField(true)
+    val cannotFindUser = ObservableField(false)
     val searchTel = ObservableField("")
     val retrofitAPI = retrofitAPI
     val listener = ObservableField(listner)
+    val database = database
 
 
     fun getContactList(contentResolver:ContentResolver){ // 너무오래걸림
@@ -62,11 +68,14 @@ class FindFriendViewModel(listner:FindFriendListener, retrofitAPI: RetrofitAPI){
     fun searchFriend(){
         friends.clear()
         dataLoadEnd.set(false)
+        cannotFindUser.set(false)
         val apiResult = retrofitAPI.getUserByTel(searchTel.get() ?: "")
         val retrofitCallback = object : Callback<ApiResponse> {
             override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
                 t.printStackTrace()
                 listener.get()?.showNetworkEnabledToast()
+                dataLoadEnd.set(true)
+                cannotFindUser.set(true)
             }
 
             override fun onResponse(
@@ -74,21 +83,37 @@ class FindFriendViewModel(listner:FindFriendListener, retrofitAPI: RetrofitAPI){
                 response: Response<ApiResponse>
             ) {
                 val result = response.body()
+                dataLoadEnd.set(true)
+                Log.d("result==", result.toString())
                 if (result?.responseCode == 200) {
-                    Log.d("result==", result.toString())
+                    if(result.body?.get("user") == null){
+                        cannotFindUser.set(true)
+                        return
+                    }
                     val response = User.getInstance(result.body?.get("user") as Map<String, Any>)
                     if(response.id == -1.toLong()){
                         //메시지나 카톡으로 앱 깔기 유도
                         dataLoadEnd.set(true)
+                        cannotFindUser.set(true)
                         return
                     }
                     val friend = Friend()
                     friend.nickName = response.name ?: ""
                     friend.tel = response.tel ?: ""
                     friend.uid = response.id
-                    //profileSource?
+                    friend.profileUrl = response.profileUrl ?:""
+                    //exist test
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val existUser = database?.FriendDao()?.getFriendByUid(friend.uid)
+                        if(existUser != null){
+                            friend.allowedPermission = 0
+                        }
+                        else{
+                            friend.allowedPermission = -1
+                        }
+                    }
+
                     friends.add(friend)
-                    dataLoadEnd.set(true)
                 }
                 else{
                     listener.get()?.showNetworkEnabledToast()

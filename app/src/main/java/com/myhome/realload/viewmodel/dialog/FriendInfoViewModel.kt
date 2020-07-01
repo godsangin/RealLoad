@@ -6,8 +6,8 @@ import com.myhome.realload.view.dialog.FriendInfoDialogListener
 
 class FriendInfoViewModel(friend:Friend, listener:FriendInfoDialogListener) {
     val friend = ObservableField(friend)
-    val allowPermission = ObservableField(false)
-    val allowedPermission = ObservableField(if(friend.allowedPermission==1) true else false)
+    val allowPermission = ObservableField(if(friend.allowedPermission==1) true else false)
+    val allowedPermission = ObservableField(false)
     val listener = listener
 
     fun checkAllowButton(){

@@ -2,13 +2,19 @@ package com.myhome.realload
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Environment
+import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import com.myhome.realload.db.AppDatabase
 import com.myhome.realload.model.ApiResponse
@@ -122,7 +128,10 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
                     database.PlaceDao().update(place)
                     //send place update to server
                     if(uid != -1.toLong()) {
-                        doPlaceInsert(context, uid, place)
+//                        CoroutineScope(Dispatchers.Main).launch {
+//                            doPlaceInsert(context, uid, place)
+//                        }
+                        startGeofenceForegroundService(context, uid, place)
                     }
                 }
             }catch(e:Exception){
@@ -246,10 +255,10 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
 
     fun doPlaceInsert(context:Context, uid:Long, place:Place){
         val apiResult = retrofitAPI.insertPlace(uid, place)
-//        Toast.makeText(context, "실행은됌", Toast.LENGTH_SHORT).show()
         val retrofitCallback = object : Callback<ApiResponse> {
             override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
                 t.printStackTrace()
+                saveTxt(context,t.message ?: "null")
                 Toast.makeText(context, context.getString(R.string.toast_network_enabled), Toast.LENGTH_SHORT).show()
             }
 
@@ -262,6 +271,7 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
 
                 }
                 else{
+                    saveTxt(context, (result ?: "null").toString())
                     Toast.makeText(context, context.getString(R.string.toast_network_enabled), Toast.LENGTH_SHORT).show()
                 }
             }
@@ -269,7 +279,48 @@ class GeofenceBroadcastReceiver :BroadcastReceiver(){
         apiResult.enqueue(retrofitCallback)
     }
 
+    fun startLocationInsertJobService(context:Context, uid:Long, place:Place){
+        saveTxt(context, "BR excuted")
+        val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val componentName = ComponentName(context, GeofenceService::class.java)
+        val builder = JobInfo.Builder(1, componentName)
+        val persistableBundle = PersistableBundle()
+        persistableBundle.putLong("uid", uid)
+        persistableBundle.putDouble("latitude", place.latitude)
+        persistableBundle.putDouble("longitude", place.longitude)
+        persistableBundle.putString("startDate", place.startDate)
+        persistableBundle.putString("endDate", place.endDate)
+        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+//        builder.setRequiresBatteryNotLow(true)
+        builder.setRequiresCharging(false)
+        val jobInfo = builder
+            .setExtras(persistableBundle)
+            .setPersisted(false)
+            .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            .setMinimumLatency(TimeUnit.MINUTES.toMillis(1))
+            .setOverrideDeadline(TimeUnit.MINUTES.toMillis(3))
+            .build()
+        jobScheduler.schedule(jobInfo)
+    }
+
     fun doPlaceLogInsert(uid:Long, placeLog:PlaceLog){
 
+    }
+
+    fun startGeofenceForegroundService(context: Context, uid:Long, place:Place){
+        saveTxt(context, "BR foreground startForegroundService")
+        val intent = Intent(context, GeofenceForegroundService::class.java)
+        intent.putExtra("uid", uid)
+        intent.putExtra("latitude", place.latitude)
+        intent.putExtra("longitude", place.longitude)
+        intent.putExtra("startDate", place.startDate)
+        intent.putExtra("endDate", place.endDate)
+
+        if(Build.VERSION.SDK_INT >= 26){
+            context.startForegroundService(intent)
+        }
+        else{
+            context.startService(intent)
+        }
     }
 }

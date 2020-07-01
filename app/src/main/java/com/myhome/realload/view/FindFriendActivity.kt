@@ -37,6 +37,10 @@ class FindFriendActivity : AppCompatActivity() {
             val sharedPreferences = getSharedPreferences("userInfo", Context.MODE_PRIVATE)
             val currentUid = sharedPreferences.getLong("uid", -1.toLong())
             //uid + currentUid 조합으로 통신
+            if(currentUid == friend.uid){
+                Toast.makeText(applicationContext, getString(R.string.toast_cannot_request_myself), Toast.LENGTH_SHORT).show()
+                return
+            }
             insertFriend(currentUid, friend)
         }
 
@@ -51,7 +55,7 @@ class FindFriendActivity : AppCompatActivity() {
         setContentView(R.layout.activity_find_friend)
         val binding = DataBindingUtil.setContentView<ActivityFindFriendBinding>(this, R.layout.activity_find_friend)
         setRetrofiInit(applicationContext)
-        viewModel = FindFriendViewModel(findFriendListener, retrofitAPI)
+        viewModel = FindFriendViewModel(findFriendListener, retrofitAPI, FriendDatabase.getInstance(applicationContext))
         binding.model = viewModel
 //        viewModel.getContactList(contentResolver)
     }

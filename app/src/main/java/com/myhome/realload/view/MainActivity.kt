@@ -35,6 +35,8 @@ import com.kakao.auth.Session
 import com.kakao.usermgmt.LoginButton
 import com.kakao.usermgmt.UserManagement
 import com.kakao.usermgmt.callback.LogoutResponseCallback
+import com.kakao.util.helper.Utility
+import com.kakao.util.helper.Utility.getPackageInfo
 import com.myhome.realload.*
 import com.myhome.realload.databinding.ActivityMainBinding
 import com.myhome.realload.model.ApiResponse
@@ -44,6 +46,7 @@ import com.myhome.realload.model.User
 import com.myhome.realload.utils.BackPressedForFinish
 import com.myhome.realload.utils.RetrofitAPI
 import com.myhome.realload.utils.SessionCallback
+import com.myhome.realload.view.dialog.AgreementDialog
 import com.myhome.realload.view.fragment.*
 import com.myhome.realload.viewmodel.MainViewModel
 import com.myhome.realload.viewmodel.MainViewModelListener
@@ -60,13 +63,14 @@ import java.security.NoSuchAlgorithmException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.logging.Logger
 
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener, PermissionListener {
     lateinit var fragmentManager:FragmentManager
     lateinit var fragmentTransaction: FragmentTransaction
     lateinit var backPressedForFinish: BackPressedForFinish
-    private val PERMISSION_REQUEST_CODE = 900
+
     private lateinit var sessionCallback:SessionCallback
     private lateinit var activity:Activity
     private lateinit var loginBt:LoginButton
@@ -76,6 +80,9 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     lateinit var sharedPreferences: SharedPreferences
     private lateinit var retrofit:Retrofit
     private lateinit var retrofitAPI:RetrofitAPI
+
+    private val PERMISSION_REQUEST_CODE = 900
+    private val AGREEMENT_REQUEST_CODE = 901
 
     val loginCallback = object:LoginCallback{
         override fun loginSuccessed(tokenId: Long, nickName: String?, profileUrl: String?) {
@@ -162,7 +169,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-//        getHashKey()
+        getKeyHash()
         fragmentManager = supportFragmentManager
         fragmentTransaction = fragmentManager.beginTransaction()
         backPressedForFinish = BackPressedForFinish(this, getString(R.string.toast_finish_app))
@@ -181,10 +188,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_PHONE_NUMBERS,
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.READ_CONTACTS,
-                Manifest.permission.READ_SMS
+                Manifest.permission.READ_PHONE_NUMBERS
+//                Manifest.permission.READ_PHONE_STATE,
+//                Manifest.permission.READ_CONTACTS,
+//                Manifest.permission.READ_SMS
                 )
             .check()
         //권한 획득 후 fragment map으로 초기화
@@ -231,7 +238,12 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 )
                 .check()
         }
-        if (Session.getCurrentSession().handleActivityResult(requestCode, resultCode, data)) {
+        else if(requestCode == AGREEMENT_REQUEST_CODE){
+            if(resultCode == Activity.RESULT_OK){
+                session.open(AuthType.KAKAO_LOGIN_ALL, activity)
+            }
+        }
+        else if (Session.getCurrentSession().handleActivityResult(requestCode, resultCode, data)) {
             return
         }
 
@@ -427,7 +439,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 }
 
                 override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
-                    Log.d("result==", response.toString())
                     val result = response.body()
                     if(result?.responseCode == 200){
                         val response = ((result.body?.get("result") ?: "false") as String).toBoolean()
@@ -452,7 +463,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         val profileUrl = sharedPreferences.getString("profileUrl","")
         loginBt.setOnClickListener {
-            session.open(AuthType.KAKAO_LOGIN_ALL, activity)
+            //permission require dialog
+            val intent = Intent(applicationContext, AgreementDialog::class.java)
+            startActivityForResult(intent, AGREEMENT_REQUEST_CODE)
+
         }
         val applicationUser = ApplicationUser.getInstance()
         if(applicationUser?.tokenId != -1.toLong()){
@@ -466,16 +480,17 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         }
 
         logoutBt.setOnClickListener{
-            UserManagement.getInstance()
-                .requestLogout(object: LogoutResponseCallback() {
-                    override fun onCompleteLogout() {
-                        val editor = sharedPreferences.edit()
-                        editor.clear()
-                        editor.commit()
-                        Toast.makeText(applicationContext, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
-                    }
+//            UserManagement.getInstance()
+//                .requestLogout(object: LogoutResponseCallback() {
+//                    override fun onCompleteLogout() {
+//                        val editor = sharedPreferences.edit()
+//                        editor.clear()
+//                        editor.commit()
+//                        Toast.makeText(applicationContext, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
+//                    }
+//
+//                })
 
-                })
         }
     }
 
@@ -504,5 +519,25 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         retrofitAPI = retrofit.create(RetrofitAPI::class.java)
+    }
+    public fun getKeyHash() {
+        val packageInfo = getPackageInfo(applicationContext, PackageManager.GET_SIGNATURES);
+        if (packageInfo == null)
+            return
+
+        for (signature in packageInfo.signatures) {
+            try {
+                val md = MessageDigest.getInstance("SHA")
+                md.update(signature.toByteArray())
+                 val sha1 = byteArrayOf(
+        0x3B, 0xDA.toByte() , 0xA0.toByte() , 0x5B, 0x4F, 0x35, 0x71, 0x02, 0x4E, 0x27, 0x22, 0xB9.toByte() , 0xAc.toByte() , 0xB2.toByte() , 0x77, 0x2F, 0x9D.toByte() , 0xA9.toByte() , 0x9B.toByte() , 0xD9.toByte()
+                 )
+//            Log.d("keyHash: ", Base64.encodeToString(sha1, Base64.NO_WRAP))
+//                Log.d("keyHash: ", Base64.encodeToString(md.digest(), Base64.NO_WRAP))
+//                test.text = Base64.encodeToString(sha1, Base64.NO_WRAP) + "\n" + Base64.encodeToString(md.digest(), Base64.NO_WRAP)
+            } catch (e:NoSuchAlgorithmException) {
+                e.printStackTrace()
+            }
+        }
     }
 }

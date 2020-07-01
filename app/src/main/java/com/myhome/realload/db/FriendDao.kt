@@ -12,6 +12,9 @@ interface FriendDao:BaseDao<Friend> {
     @Query("SELECT * FROM friend")
     fun getAllFriend():LiveData<List<Friend>>
 
+    @Query("SELECT * FROM friend WHERE uid=:uid")
+    fun getFriendByUid(uid:Long):Friend?
+
     @Query("UPDATE Friend SET profileUrl=:profileUrl, tel=:tel, allowedPermission=:allowedPermission WHERE uid=:uid")
     fun updateFriend(uid:Long, profileUrl:String, tel:String, allowedPermission:Int)
 }

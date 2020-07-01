@@ -5,4 +5,5 @@ import com.myhome.realload.model.Friend
 interface FriendListener {
     fun goSearchFriendActivity()
     fun showFriendInfo(friend:Friend)
+    fun allowRequest(friend:Friend)
 }
